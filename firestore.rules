@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Модель данных Tuti:
+//   users/{uid}                — публичный профиль: имя, город, xp, streak.
+//                                Читают все авторизованные — на нём построены
+//                                лидерборд и рейтинг по городам.
+//   users/{uid}/sync/{docId}   — приватная синхронизация прогресса
+//                                (progress, lessons, topics, words).
+//                                Видит и пишет только сам владелец.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+
+      // Правила родителя не наследуются подколлекциями — нужен явный match.
+      match /sync/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // TUTI-PROMOCODES/{code} — промокоды Tuti Plus. Document ID и есть код.
+    // Читать может любой авторизованный (иначе активация не увидит документ),
+    // а из записи разрешено ровно одно: погасить неиспользованный код на себя.
+    // Менять active, months или чужой usedBy клиент не может.
+    match /TUTI-PROMOCODES/{code} {
+      allow read: if request.auth != null;
+      allow update: if request.auth != null
+                    && resource.data.used == false
+                    && request.resource.data.used == true
+                    && request.resource.data.usedBy == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['used', 'usedBy', 'usedAt']);
+      allow create, delete: if false;
+    }
+
+    // Всё остальное закрыто.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

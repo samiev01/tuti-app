@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "425433294161",
+    "project_id": "tuti-tj",
+    "storage_bucket": "tuti-tj.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425433294161:android:4d1330fc0c545368735f70",
+        "android_client_info": {
+          "package_name": "app.tuti.tj"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "425433294161-qoo2h0sjubqdm8i42o7jsv8b9nk1jq6u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.tuti.tj",
+            "certificate_hash": "a9fef3918d7e1580f35a58d7865233680684d469"
+          }
+        },
+        {
+          "client_id": "425433294161-c520vt4eh94p29ci4q4ochl0r7oc2pl4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2GzUAjVsDCTJbllwEmDIJJFDc2N8LGN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "425433294161-c520vt4eh94p29ci4q4ochl0r7oc2pl4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

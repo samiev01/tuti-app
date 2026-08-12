@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!--
+      Системный сплэш живёт один кадр и сразу сменяется Compose-экраном
+      запуска (ui/screens/SplashScreen.kt). Поэтому здесь только фон, и он
+      обязан совпадать с верхней точкой градиента того экрана — иначе на
+      старте мелькнёт полоса другого цвета.
+    -->
+    <color name="splash_background">#F4FDF9</color>
+</resources>

@@ -1,0 +1,27 @@
+<style>
+  body { font: 14px system-ui; padding: 20px; background: #fff; color: #222; }
+  .row { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 28px; }
+  .big img { width: 200px; height: 200px; display: block; }
+  .small img { width: 48px; height: 48px; display: block; }
+  .dark { background: #0E211D; padding: 12px; }
+  figcaption { text-align: center; margin-top: 6px; color: #666; }
+  h3 { margin: 24px 0 8px; }
+</style>
+<h3>200px</h3>
+<div class="row">
+  <figure class="big"><img src="tuti_hello.svg?v=2"><figcaption>hello</figcaption></figure>
+  <figure class="big"><img src="tuti_happy.svg?v=2"><figcaption>happy</figcaption></figure>
+  <figure class="big"><img src="tuti_oops.svg?v=2"><figcaption>oops</figcaption></figure>
+</div>
+<h3>48px — приёмка A5</h3>
+<div class="row">
+  <figure class="small"><img src="tuti_hello.svg?v=2"></figure>
+  <figure class="small"><img src="tuti_happy.svg?v=2"></figure>
+  <figure class="small"><img src="tuti_oops.svg?v=2"></figure>
+</div>
+<h3>48px на тёмном — проверка прозрачности</h3>
+<div class="row dark">
+  <figure class="small"><img src="tuti_hello.svg?v=2"></figure>
+  <figure class="small"><img src="tuti_happy.svg?v=2"></figure>
+  <figure class="small"><img src="tuti_oops.svg?v=2"></figure>
+</div>

@@ -1,0 +1,62 @@
+<style>
+  body { font: 14px system-ui; padding: 20px; background: #F0FAF7; color: #222; }
+  .row { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+  .dark { background: #121212; }
+  figcaption { margin-top: 8px; color: #666; font-size: 12px; }
+  .pane { padding: 16px; border-radius: 12px; }
+</style>
+<h3>Иконка сплэша в холсте 288 с масками</h3>
+<div class="row">
+  <figure class="pane">
+    <svg width="288" height="288" viewBox="0 0 288 288">
+      <rect width="288" height="288" fill="#F0FAF7"/>
+      <g transform="translate(46.5,48.9) scale(1.95)">
+        <path fill="#22C2A6" d="M36.5,14.5 c5,2.5 9,8 11,15 c-1,2.5 -5.5,2.5 -7.5,0 c-4,-5.5 -6.5,-11.5 -3.5,-15 z"/>
+        <path fill="#22C2A6" d="M50,9 c5,4.5 6.5,11 4,20 c-1.5,2.5 -6.5,2.5 -8,0 c-2.5,-9 -1,-15.5 4,-20 z"/>
+        <path fill="#22C2A6" d="M63.5,14.5 c-5,2.5 -9,8 -11,15 c1,2.5 5.5,2.5 7.5,0 c4,-5.5 6.5,-11.5 3.5,-15 z"/>
+        <path fill="#22C2A6" d="M27,58 c-7,4.5 -11.5,13.5 -10,23 c1.5,3 5,2.5 7,-0.5 c3.5,-7.5 5,-15.5 3,-22.5 z"/>
+        <path fill="#22C2A6" d="M73,58 c7,4.5 11.5,13.5 10,23 c-1.5,3 -5,2.5 -7,-0.5 c-3.5,-7.5 -5,-15.5 -3,-22.5 z"/>
+        <defs>
+          <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="22" y1="27" x2="78" y2="88.5">
+            <stop offset="0" stop-color="#2FD3C4"/><stop offset="1" stop-color="#3FE07A"/>
+          </linearGradient>
+        </defs>
+        <path fill="url(#g)" d="M50,27 c14,0 26,13.5 27.5,30 C79,74 66.5,88.5 50,88.5 C33.5,88.5 21,74 22.5,57 C24,40.5 36,27 50,27 z"/>
+        <g transform="rotate(-35 36 38)">
+          <path fill="#FFFFFF" fill-opacity=".25" d="M28.8,38 a7.2,4.6 0 1,0 14.4,0 a7.2,4.6 0 1,0 -14.4,0 z"/>
+        </g>
+        <path fill="#FF6B4A" fill-opacity=".85" d="M25.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+        <path fill="#FF6B4A" fill-opacity=".85" d="M63.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+        <path fill="#0E211D" d="M32,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+        <path fill="#0E211D" d="M56,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+        <path fill="#FFB020" d="M50,56.5 c4.5,1 7.5,3.5 7.5,6.5 c0,4 -4,7.5 -7.5,8.5 c-3.5,-1 -7.5,-4.5 -7.5,-8.5 c0,-3 3,-5.5 7.5,-6.5 z"/>
+      </g>
+      <circle cx="144" cy="144" r="120" fill="none" stroke="#E53935" stroke-width="2" stroke-dasharray="6 4"/>
+      <circle cx="144" cy="144" r="80" fill="none" stroke="#1E88E5" stroke-width="2" stroke-dasharray="6 4"/>
+    </svg>
+    <figcaption>красный — маска 240dp · синий — безопасная зона 160dp</figcaption>
+  </figure>
+
+  <figure class="pane dark">
+    <svg width="288" height="288" viewBox="0 0 288 288">
+      <rect width="288" height="288" fill="#121212"/>
+      <g transform="translate(46.5,48.9) scale(1.95)">
+        <path fill="#22C2A6" d="M36.5,14.5 c5,2.5 9,8 11,15 c-1,2.5 -5.5,2.5 -7.5,0 c-4,-5.5 -6.5,-11.5 -3.5,-15 z"/>
+        <path fill="#22C2A6" d="M50,9 c5,4.5 6.5,11 4,20 c-1.5,2.5 -6.5,2.5 -8,0 c-2.5,-9 -1,-15.5 4,-20 z"/>
+        <path fill="#22C2A6" d="M63.5,14.5 c-5,2.5 -9,8 -11,15 c1,2.5 5.5,2.5 7.5,0 c4,-5.5 6.5,-11.5 3.5,-15 z"/>
+        <path fill="#22C2A6" d="M27,58 c-7,4.5 -11.5,13.5 -10,23 c1.5,3 5,2.5 7,-0.5 c3.5,-7.5 5,-15.5 3,-22.5 z"/>
+        <path fill="#22C2A6" d="M73,58 c7,4.5 11.5,13.5 10,23 c-1.5,3 -5,2.5 -7,-0.5 c-3.5,-7.5 -5,-15.5 -3,-22.5 z"/>
+        <path fill="url(#g)" d="M50,27 c14,0 26,13.5 27.5,30 C79,74 66.5,88.5 50,88.5 C33.5,88.5 21,74 22.5,57 C24,40.5 36,27 50,27 z"/>
+        <g transform="rotate(-35 36 38)">
+          <path fill="#FFFFFF" fill-opacity=".25" d="M28.8,38 a7.2,4.6 0 1,0 14.4,0 a7.2,4.6 0 1,0 -14.4,0 z"/>
+        </g>
+        <path fill="#FF6B4A" fill-opacity=".85" d="M25.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+        <path fill="#FF6B4A" fill-opacity=".85" d="M63.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+        <path fill="#0E211D" d="M32,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+        <path fill="#0E211D" d="M56,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+        <path fill="#FFB020" d="M50,56.5 c4.5,1 7.5,3.5 7.5,6.5 c0,4 -4,7.5 -7.5,8.5 c-3.5,-1 -7.5,-4.5 -7.5,-8.5 c0,-3 3,-5.5 7.5,-6.5 z"/>
+      </g>
+    </svg>
+    <figcaption style="color:#aaa">тёмная тема, #121212</figcaption>
+  </figure>
+</div>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Точки вращения крыльев (у корпуса, не в центре фигуры): wing_left 27,59 | wing_right 73,59 -->
+  <defs>
+    <linearGradient id="tutiBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2FD3C4"/>
+      <stop offset="1" stop-color="#3FE07A"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse id="shadow" cx="50" cy="92" rx="22" ry="3" fill="#0E211D" opacity=".07"/>
+
+  <g id="crest" fill="#22C2A6">
+    <path id="crest_left" d="M36.5 14.5c5 2.5 9 8 11 15-1 2.5-5.5 2.5-7.5 0-4-5.5-6.5-11.5-3.5-15z"/>
+    <path id="crest_mid" d="M50 9c5 4.5 6.5 11 4 20-1.5 2.5-6.5 2.5-8 0-2.5-9-1-15.5 4-20z"/>
+    <path id="crest_right" d="M63.5 14.5c-5 2.5-9 8-11 15 1 2.5 5.5 2.5 7.5 0 4-5.5 6.5-11.5 3.5-15z"/>
+  </g>
+
+  <path id="wing_left" fill="#22C2A6" d="M27 58c-7 4.5-11.5 13.5-10 23 1.5 3 5 2.5 7-.5 3.5-7.5 5-15.5 3-22.5z"/>
+  <path id="wing_right" fill="#22C2A6" d="M73 58c7-4.5 13.5-13.5 13.5-23-.5-3-4.5-3-6.5 0-4 7.5-6.5 15.5-7 23z"/>
+
+  <path id="body" fill="url(#tutiBody)" d="M50 27c14 0 26 13.5 27.5 30C79 74 66.5 88.5 50 88.5S21 74 22.5 57C24 40.5 36 27 50 27z"/>
+
+  <ellipse id="highlight" cx="36" cy="38" rx="7.2" ry="4.6" fill="#FFFFFF" opacity=".25" transform="rotate(-35 36 38)"/>
+
+  <ellipse id="cheek_left" cx="31" cy="66" rx="5.8" ry="4.4" fill="#FF6B4A" opacity=".85"/>
+  <ellipse id="cheek_right" cx="69" cy="66" rx="5.8" ry="4.4" fill="#FF6B4A" opacity=".85"/>
+
+  <circle id="eye_white_left" cx="38" cy="57" r="6.5" fill="#FFFFFF" opacity="0"/>
+  <circle id="eye_white_right" cx="62" cy="57" r="6.5" fill="#FFFFFF" opacity="0"/>
+  <circle id="pupil_left" cx="38" cy="57.5" r="4.1" fill="#0E211D" opacity="0"/>
+  <circle id="pupil_right" cx="62" cy="57.5" r="4.1" fill="#0E211D" opacity="0"/>
+  <circle id="glint_left" cx="39.6" cy="55.6" r="1.35" fill="#FFFFFF" opacity="0"/>
+  <circle id="glint_right" cx="63.6" cy="55.6" r="1.35" fill="#FFFFFF" opacity="0"/>
+
+  <path id="lid_left" fill="#0E211D" d="M32 58a6 6 0 0 1 12 0h-2.2a3.8 3.8 0 0 0-7.6 0z"/>
+  <path id="lid_right" fill="#0E211D" d="M56 58a6 6 0 0 1 12 0h-2.2a3.8 3.8 0 0 0-7.6 0z"/>
+
+  <path id="brow_left" fill="#0E211D" opacity="0" d="M31.6 48.8c2.6-3.4 7.2-4 10.4-1.9l-.9 2c-2.7-1.7-6.3-1.2-8.4 1.5z"/>
+  <path id="brow_right" fill="#0E211D" opacity="0" d="M68.4 48.8c-2.6-3.4-7.2-4-10.4-1.9l.9 2c2.7-1.7 6.3-1.2 8.4 1.5z"/>
+
+  <path id="beak" fill="#FFB020" d="M50 56.5c4.5 1 7.5 3.5 7.5 6.5 0 4-4 7.5-7.5 8.5-3.5-1-7.5-4.5-7.5-8.5 0-3 3-5.5 7.5-6.5z"/>
+</svg>

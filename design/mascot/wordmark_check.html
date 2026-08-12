@@ -1,0 +1,81 @@
+<style>
+  body { font: 14px system-ui; padding: 24px; background: #F0FAF7; color: #222; }
+  .pane { padding: 16px; border-radius: 12px; display: inline-block; }
+  .dark { background: #121212; }
+  figcaption { margin-top: 6px; font-size: 12px; color: #666; }
+  .row { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+</style>
+<h3>Логотип «Tuti» — 200×80, обводка 12, круглые окончания</h3>
+<div class="row">
+  <figure class="pane">
+    <svg width="300" height="120" viewBox="0 0 200 80">
+      <g fill="none" stroke="#00BFA6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M44,26 L74,26"/>
+        <path d="M59,26 L59,58"/>
+        <path d="M90,34 L90,46 A10,12 0 0 0 110,46"/>
+        <path d="M110,34 L110,58"/>
+        <path d="M132,24 L132,50 Q132,58 140,58"/>
+        <path d="M124,34 L142,34"/>
+        <path d="M156,34 L156,58"/>
+      </g>
+      <circle cx="156" cy="22" r="6" fill="#00BFA6"/>
+      <rect x="0" y="0" width="200" height="80" fill="none" stroke="#E53935" stroke-width="0.5" stroke-dasharray="3 3"/>
+    </svg>
+    <figcaption>светлая тема · #00BFA6 · красным габарит 200×80</figcaption>
+  </figure>
+
+  <figure class="pane dark">
+    <svg width="300" height="120" viewBox="0 0 200 80">
+      <g fill="none" stroke="#00E5C3" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M44,26 L74,26"/>
+        <path d="M59,26 L59,58"/>
+        <path d="M90,34 L90,46 A10,12 0 0 0 110,46"/>
+        <path d="M110,34 L110,58"/>
+        <path d="M132,24 L132,50 Q132,58 140,58"/>
+        <path d="M124,34 L142,34"/>
+        <path d="M156,34 L156,58"/>
+      </g>
+      <circle cx="156" cy="22" r="6" fill="#00E5C3"/>
+    </svg>
+    <figcaption style="color:#aaa">тёмная тема · #00E5C3</figcaption>
+  </figure>
+</div>
+
+<h3>Как это встанет на сплэше</h3>
+<div class="row">
+  <figure class="pane">
+    <svg width="220" height="440" viewBox="0 0 220 440">
+      <rect width="220" height="440" rx="20" fill="#F0FAF7"/>
+      <g transform="translate(110,190) scale(0.42) translate(-144,-144)">
+        <g transform="translate(46.5,48.9) scale(1.95)">
+          <path fill="#22C2A6" d="M36.5,14.5 c5,2.5 9,8 11,15 c-1,2.5 -5.5,2.5 -7.5,0 c-4,-5.5 -6.5,-11.5 -3.5,-15 z"/>
+          <path fill="#22C2A6" d="M50,9 c5,4.5 6.5,11 4,20 c-1.5,2.5 -6.5,2.5 -8,0 c-2.5,-9 -1,-15.5 4,-20 z"/>
+          <path fill="#22C2A6" d="M63.5,14.5 c-5,2.5 -9,8 -11,15 c1,2.5 5.5,2.5 7.5,0 c4,-5.5 6.5,-11.5 3.5,-15 z"/>
+          <path fill="#22C2A6" d="M27,58 c-7,4.5 -11.5,13.5 -10,23 c1.5,3 5,2.5 7,-0.5 c3.5,-7.5 5,-15.5 3,-22.5 z"/>
+          <path fill="#22C2A6" d="M73,58 c7,4.5 11.5,13.5 10,23 c-1.5,3 -5,2.5 -7,-0.5 c-3.5,-7.5 -5,-15.5 -3,-22.5 z"/>
+          <defs>
+            <linearGradient id="gg" gradientUnits="userSpaceOnUse" x1="22" y1="27" x2="78" y2="88.5">
+              <stop offset="0" stop-color="#2FD3C4"/><stop offset="1" stop-color="#3FE07A"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#gg)" d="M50,27 c14,0 26,13.5 27.5,30 C79,74 66.5,88.5 50,88.5 C33.5,88.5 21,74 22.5,57 C24,40.5 36,27 50,27 z"/>
+          <path fill="#FF6B4A" fill-opacity=".85" d="M25.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+          <path fill="#FF6B4A" fill-opacity=".85" d="M63.2,66 a5.8,4.4 0 1,0 11.6,0 a5.8,4.4 0 1,0 -11.6,0 z"/>
+          <path fill="#0E211D" d="M32,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+          <path fill="#0E211D" d="M56,58 a6,6 0 0 1 12,0 l-2.2,0 a3.8,3.8 0 0 0 -7.6,0 z"/>
+          <path fill="#FFB020" d="M50,56.5 c4.5,1 7.5,3.5 7.5,6.5 c0,4 -4,7.5 -7.5,8.5 c-3.5,-1 -7.5,-4.5 -7.5,-8.5 c0,-3 3,-5.5 7.5,-6.5 z"/>
+        </g>
+      </g>
+      <g transform="translate(110,390) scale(0.55) translate(-100,-40)">
+        <g fill="none" stroke="#00BFA6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M44,26 L74,26"/><path d="M59,26 L59,58"/>
+          <path d="M90,34 L90,46 A10,12 0 0 0 110,46"/><path d="M110,34 L110,58"/>
+          <path d="M132,24 L132,50 Q132,58 140,58"/><path d="M124,34 L142,34"/>
+          <path d="M156,34 L156,58"/>
+        </g>
+        <circle cx="156" cy="22" r="6" fill="#00BFA6"/>
+      </g>
+    </svg>
+    <figcaption>примерная компоновка экрана</figcaption>
+  </figure>
+</div>
