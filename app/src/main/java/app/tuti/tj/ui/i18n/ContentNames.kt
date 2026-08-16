@@ -2,6 +2,7 @@ package app.tuti.tj.ui.i18n
 
 import app.tuti.tj.data.content.FreeTopicDefinition
 import app.tuti.tj.data.content.TopicInfo
+import app.tuti.tj.data.user.CityRegion
 
 // ════════════════════════════════════════════════════════════════
 //  НАЗВАНИЯ ТЕМ
@@ -20,6 +21,20 @@ import app.tuti.tj.data.content.TopicInfo
  * по-таджикски, поэтому и значение по умолчанию — таджикское.
  */
 const val DEFAULT_CITY = "Душанбе"
+
+/**
+ * Регион города подписывается здесь, а не в каталоге: слой данных
+ * знает только код региона, а как он называется — дело интерфейса.
+ */
+fun CityRegion.label(strings: TutiStrings): String = when (this) {
+    CityRegion.CAPITAL -> strings.cities.regionCapital
+    CityRegion.NORTH -> strings.cities.regionNorth
+    CityRegion.SOUTH -> strings.cities.regionSouth
+    CityRegion.KHATLON -> strings.cities.regionKhatlon
+    CityRegion.SUGHD -> strings.cities.regionSughd
+    CityRegion.CENTRAL -> strings.cities.regionCentral
+    CityRegion.OTHER -> strings.cities.regionOther
+}
 
 fun FreeTopicDefinition.localizedName(strings: TutiStrings): String =
     if (strings.language == AppLanguage.RUSSIAN) nameRu else nameTj

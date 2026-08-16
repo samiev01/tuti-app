@@ -127,6 +127,10 @@ object TjOnboarding : OnboardingStrings {
     override val readyTitle = "Ҳама чиз тайёр! 🎉"
     override val readySubtitle = "Tuti курси шуморо тайёр кард.\nБиёед оғоз кунем!"
 
+    override val offlineTitle = "Интернет нест"
+    override val offlineMessage =
+        "Барои оғоз пайвасти интернет лозим аст.\nҲамагӣ як бор."
+
     override fun minutes(count: Int) = "$count дақиқа"
 }
 

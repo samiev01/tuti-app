@@ -27,19 +27,31 @@ import app.tuti.tj.ui.navigation.NavGraph
 import app.tuti.tj.ui.navigation.ONBOARDING_ROUTE
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.remote.FirestoreManager
+import app.tuti.tj.data.user.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import app.tuti.tj.ui.i18n.LanguageManager
 import app.tuti.tj.ui.i18n.ProvideTutiStrings
 import app.tuti.tj.ui.screens.LanguagePickScreen
+import app.tuti.tj.ui.screens.NoConnectionScreen
 import app.tuti.tj.ui.theme.ThemeManager
 import app.tuti.tj.ui.theme.ThemeMode
 import app.tuti.tj.ui.theme.TutiTheme
+
+/**
+ * Состояние анонимного входа. Важен только отказ: пока попытка идёт,
+ * приложение живёт как обычно — сплэш и первые шаги онбординга сети
+ * не требуют.
+ */
+private enum class AuthState { PENDING, READY, FAILED }
 
 class MainActivity : ComponentActivity() {
 
     /** null — стартовый экран ещё не определён, системный сплэш держится. */
     private var startDestination: String? by mutableStateOf(null)
+
+    private var authState: AuthState by mutableStateOf(AuthState.PENDING)
+    private var authRetrying: Boolean by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Обязательно до super.onCreate: иначе системный сплэш не перехватится.
@@ -50,6 +62,11 @@ class MainActivity : ComponentActivity() {
         // себя Compose-экран запуска, а системный отдаёт кадр сразу. Их фоны
         // совпадают, поэтому подмена не видна.
         resolveStartDestination()
+
+        // Аккаунт заводится параллельно с первым экраном, а не в конце
+        // онбординга: к последнему шагу uid уже готов, и сохранение
+        // профиля не ждёт сети в самый неподходящий момент.
+        signIn()
 
         // Фон сплэша брендовый, а первый экран — светлый или тёмный, поэтому
         // уход построен как кроссфейд: цвет не «моргает», а перетекает.
@@ -88,6 +105,20 @@ class MainActivity : ComponentActivity() {
                     val languageChosen by LanguageManager.isChosen.collectAsState()
                     if (!languageChosen) {
                         LanguagePickScreen()
+                        return@ProvideTutiStrings
+                    }
+
+                    // Без аккаунта онбординг сохранять некуда, поэтому
+                    // новому пользователю здесь честно говорится про
+                    // сеть. Вернувшегося это не касается: его прогресс
+                    // лежит в Room и открывается офлайн.
+                    if (startDestination == ONBOARDING_ROUTE &&
+                        authState == AuthState.FAILED
+                    ) {
+                        NoConnectionScreen(
+                            isRetrying = authRetrying,
+                            onRetry = { signIn() },
+                        )
                         return@ProvideTutiStrings
                     }
 
@@ -146,9 +177,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Анонимный вход. Повторяется по кнопке с экрана «нет сети»:
+     * [authRetrying] держит на ней спиннер, а сам экран остаётся
+     * на месте, пока uid не получен — иначе человек проскочил бы
+     * в онбординг без аккаунта.
+     */
+    private fun signIn() {
+        if (authRetrying) return
+        authRetrying = true
+        lifecycleScope.launch {
+            val result = AuthRepository.ensureSignedIn()
+            authState = if (result.isSuccess) AuthState.READY else AuthState.FAILED
+            authRetrying = false
+        }
+    }
+
     private suspend fun syncProfileToFirestore(repo: TutiRepository) {
         runCatching {
             val fbUser = FirebaseAuth.getInstance().currentUser ?: return@runCatching
+            // Анонимному аккаунту в лидерборде делать нечего: имени у
+            // него нет, и карточка вышла бы безымянной. Он попадёт туда
+            // вместе с Google — там появится и имя.
+            if (fbUser.isAnonymous) return@runCatching
             val prefs = getSharedPreferences("tuti_prefs", Context.MODE_PRIVATE)
             val city = prefs.getString("user_city", "Душанбе") ?: "Душанбе"
             val user = repo.getUserOnce()

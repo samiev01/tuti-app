@@ -8,12 +8,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,12 +49,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.tuti.tj.data.repository.TutiRepository
-import app.tuti.tj.data.sync.CloudSyncManager
-import app.tuti.tj.notifications.NotificationScheduler
+import app.tuti.tj.data.user.CityCatalog
 import app.tuti.tj.ui.components.GreetingOrbit
 import app.tuti.tj.ui.components.LivingTutiMascot
-import app.tuti.tj.ui.components.rememberGoogleSignIn
 import app.tuti.tj.ui.components.kit.TutiButton
 import app.tuti.tj.ui.components.kit.TutiButtonSize
 import app.tuti.tj.ui.components.kit.TutiIconTile
@@ -69,12 +64,11 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSize
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import app.tuti.tj.ui.i18n.DEFAULT_CITY
 import app.tuti.tj.ui.i18n.LocalTutiStrings
 import app.tuti.tj.ui.i18n.OnboardingStrings
 import app.tuti.tj.ui.i18n.TutiStrings
+import app.tuti.tj.ui.i18n.label
 
 // ════════════════════════════════════════════════════════════════
 //  ОНБОРДИНГ
@@ -116,46 +110,20 @@ private fun goalOptions(s: OnboardingStrings) = listOf(
     OptionItem("✈️", s.goalTravel, s.goalTravelHint),
     OptionItem("🧠", s.goalPersonal, s.goalPersonalHint),
 )
-private fun timeOptions(s: OnboardingStrings) = listOf(
-    OptionItem("☕", s.minutes(5), s.timeCalm),
-    OptionItem("📖", s.minutes(10), s.timeModerate),
-    OptionItem("💪", s.minutes(15), s.timeSerious),
-    OptionItem("🔥", s.minutes(20), s.timeMax),
-)
+private fun timeOptions(s: OnboardingStrings) = listOf("☕", "📖", "💪", "🔥")
+    .zip(listOf(s.timeCalm, s.timeModerate, s.timeSerious, s.timeMax))
+    .mapIndexed { idx, (emoji, hint) ->
+        OptionItem(emoji, s.minutes(dailyMinutesValues[idx]), hint)
+    }
 
 /**
- * Порядок совпадает с [cityDbValues]: выбор хранится индексом.
- * Название города переводится, а в базу уходит таджикский вариант —
- * иначе рейтинг разъехался бы на две группы по одному и тому же городу.
+ * Список собирается из каталога: эмодзи и код лежат там, а название
+ * и регион переводятся здесь. Раньше это были два параллельных
+ * списка, которые надо было держать в одном порядке руками.
  */
-private fun cityOptions(s: TutiStrings) = listOf(
-    OptionItem("🏛️", s.cities.name("Душанбе"), s.cities.regionCapital),
-    OptionItem("🏔️", s.cities.name("Хуҷанд"), s.cities.regionNorth),
-    OptionItem("☀️", s.cities.name("Бохтар"), s.cities.regionSouth),
-    OptionItem("🌿", s.cities.name("Кӯлоб"), s.cities.regionKhatlon),
-    OptionItem("🏰", s.cities.name("Истаравшан"), s.cities.regionSughd),
-    OptionItem("🍑", s.cities.name("Конибодом"), s.cities.regionSughd),
-    OptionItem("📚", s.cities.name("Турсунзода"), s.cities.regionCentral),
-    OptionItem("🎨", s.cities.name("Пенҷикент"), s.cities.regionSughd),
-    OptionItem("🌾", s.cities.name("Ғафуров"), s.cities.regionSughd),
-    OptionItem("🏗️", s.cities.name("Ваҳдат"), s.cities.regionCentral),
-    OptionItem("🌄", s.cities.name("Исфара"), s.cities.regionSughd),
-    OptionItem("🔧", s.cities.name("Норак"), s.cities.regionKhatlon),
-    OptionItem("🏭", s.cities.name("Ёвон"), s.cities.regionKhatlon),
-    OptionItem("🏘️", s.cities.name("Дигар"), s.cities.regionOther),
-)
-
-private val languageDbValues = listOf("russian", "english")
-private val levelDbValues = listOf("beginner", "intermediate", "advanced")
-private val goalDbValues = listOf("work", "study", "travel", "personal")
-private val dailyMinutesValues = listOf(5, 10, 15, 20)
-// Порядок и длина совпадают с cityOptions: выбор хранится индексом,
-// поэтому новый город добавляется сразу в оба списка на одну позицию.
-private val cityDbValues = listOf(
-    "Душанбе", "Хуҷанд", "Бохтар", "Кӯлоб", "Истаравшан", "Конибодом",
-    "Турсунзода", "Пенҷикент", "Ғафуров", "Ваҳдат", "Исфара", "Норак",
-    "Ёвон", "Дигар",
-)
+private fun cityOptions(s: TutiStrings) = CityCatalog.all.map { city ->
+    OptionItem(city.emoji, s.cities.name(city.tajikName), city.region.label(s))
+}
 
 private const val TOTAL_PAGES = 7
 
@@ -164,7 +132,11 @@ private const val TOTAL_PAGES = 7
 // ═══════════════════════════════════════════════════
 
 @Composable
-fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
+fun OnboardingScreen(
+    repository: TutiRepository,
+    onComplete: () -> Unit,
+    viewModel: OnboardingViewModel = viewModel(),
+) {
     val isDark = LocalDarkTheme.current
     val c = MaterialTheme.tutiColors
     val scope = rememberCoroutineScope()
@@ -173,38 +145,16 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
     val s = strings.onboarding
 
     var page by remember { mutableIntStateOf(0) }
-    // Вход слился с приветствием: отдельного экрана логина больше нет.
-    // Пройти дальше первого шага можно только через Google — вариант
-    // «без аккаунта» убран, поэтому здесь нет ветки пропуска.
-    var isRestoring by remember { mutableStateOf(false) }
-    val alreadySignedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+    // Экрана входа в онбординге больше нет. Аккаунт создаётся
+    // анонимно на старте приложения, поэтому uid уже готов, а
+    // Google подключается позже к нему же.
+    var isSaving by remember { mutableStateOf(false) }
 
-    val signIn = rememberGoogleSignIn {
-        scope.launch {
-            // У вернувшегося пользователя прогресс лежит в облаке —
-            // тогда настройку проходить заново не нужно.
-            isRestoring = true
-            val restored = runCatching { CloudSyncManager.restoreProgress(context) }
-                .getOrDefault(false)
-            isRestoring = false
-            if (restored) {
-                Toast.makeText(
-                    context,
-                    s.cloudRestored,
-                    Toast.LENGTH_SHORT,
-                ).show()
-                onComplete()
-            } else {
-                page = 1
-            }
-        }
-    }
-
-    var langIdx by remember { mutableStateOf<Int?>(null) }
-    var levelIdx by remember { mutableStateOf<Int?>(null) }
-    var goalIdx by remember { mutableStateOf<Int?>(null) }
-    var timeIdx by remember { mutableStateOf<Int?>(null) }
-    var cityIdx by remember { mutableStateOf<Int?>(null) }
+    val langIdx = viewModel.languageIndex
+    val levelIdx = viewModel.levelIndex
+    val goalIdx = viewModel.goalIndex
+    val timeIdx = viewModel.timeIndex
+    val cityIdx = viewModel.cityIndex
 
     // Акцент шага берётся из палитры дизайн-системы
     val accentPair = when (stepTones[page.coerceIn(stepTones.indices)]) {
@@ -281,7 +231,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                         options = languageOptions(s),
                         selected = langIdx,
                         accent = animAccent,
-                        onSelect = { langIdx = it },
+                        onSelect = viewModel::selectLanguage,
                     )
                     2 -> SelectionPage(
                         title = s.levelTitle,
@@ -289,7 +239,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                         options = levelOptions(s),
                         selected = levelIdx,
                         accent = animAccent,
-                        onSelect = { levelIdx = it },
+                        onSelect = viewModel::selectLevel,
                     )
                     3 -> SelectionPage(
                         title = s.goalTitle,
@@ -297,7 +247,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                         options = goalOptions(s),
                         selected = goalIdx,
                         accent = animAccent,
-                        onSelect = { goalIdx = it },
+                        onSelect = viewModel::selectGoal,
                     )
                     4 -> SelectionPage(
                         title = s.timeTitle,
@@ -305,7 +255,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                         options = timeOptions(s),
                         selected = timeIdx,
                         accent = animAccent,
-                        onSelect = { timeIdx = it },
+                        onSelect = viewModel::selectTime,
                     )
                     5 -> SelectionPage(
                         title = s.cityTitle,
@@ -313,7 +263,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                         options = cityOptions(strings),
                         selected = cityIdx,
                         accent = animAccent,
-                        onSelect = { cityIdx = it },
+                        onSelect = viewModel::selectCity,
                     )
                     6 -> CompletionPage()
                 }
@@ -321,65 +271,34 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
 
             Spacer(Modifier.height(TutiSpace.md))
 
-            // Первый шаг — единственный, где внизу не «Давом», а выбор:
-            // войти через Google или продолжить без аккаунта.
-            if (page == 0 && !alreadySignedIn) {
-                AuthActions(
-                    isLoading = signIn.isRunning || isRestoring,
-                    onSignIn = signIn.launch,
-                )
-            } else {
-                TutiButton(
-                    text = if (page < TOTAL_PAGES - 1) {
-                        strings.common.continueShort
+            TutiButton(
+                text = if (page < TOTAL_PAGES - 1) {
+                    strings.common.continueShort
+                } else {
+                    strings.common.startAction
+                },
+                onClick = {
+                    if (page < TOTAL_PAGES - 1) {
+                        page++
                     } else {
-                        strings.common.startAction
-                    },
-                    onClick = {
-                        if (page < TOTAL_PAGES - 1) {
-                            page++
-                        } else {
-                            scope.launch {
-                                try {
-                                    val language =
-                                        languageDbValues.getOrElse(langIdx ?: 0) { "russian" }
-                                    val level =
-                                        levelDbValues.getOrElse(levelIdx ?: 0) { "beginner" }
-                                    val goal = goalDbValues.getOrElse(goalIdx ?: 0) { "personal" }
-                                    val minutes = dailyMinutesValues.getOrElse(timeIdx ?: 0) { 5 }
-                                    val city = cityDbValues.getOrElse(cityIdx ?: 0) { DEFAULT_CITY }
-                                    val langSuffix =
-                                        if (language == "english") "english" else "russian"
-                                    val courseId = "${goal}_$langSuffix"
-                                    repository.saveOnboardingData(
-                                        language, level, goal, minutes, courseId,
-                                    )
-                                    repository.initCourseProgress(courseId)
-                                    context.getSharedPreferences(
-                                        "tuti_prefs",
-                                        android.content.Context.MODE_PRIVATE,
-                                    ).edit().putString("user_city", city).apply()
-                                    val fbUser = FirebaseAuth.getInstance().currentUser
-                                    if (fbUser != null) {
-                                        app.tuti.tj.data.remote.FirestoreManager.saveUserProfile(
-                                            fbUser.uid, fbUser.displayName ?: "", city, 0,
-                                        )
-                                    }
-                                    NotificationScheduler.scheduleDailyReminders(context)
-                                    onComplete()
-                                } catch (_: Exception) {
-                                    onComplete()
-                                }
-                            }
+                        // Сохранение не может провалиться так, чтобы человек
+                        // застрял на онбординге: локальная часть обёрнута в
+                        // runCatching, облачная ограничена таймаутом.
+                        scope.launch {
+                            isSaving = true
+                            viewModel.complete(context, repository)
+                            isSaving = false
+                            onComplete()
                         }
-                    },
-                    enabled = canAdvance,
-                    size = if (page == TOTAL_PAGES - 1) TutiButtonSize.Large
-                    else TutiButtonSize.Medium,
-                    trailingEmoji = if (page < TOTAL_PAGES - 1) "→" else "🚀",
-                    gradient = listOf(animAccent, animAccentDeep),
-                )
-            }
+                    }
+                },
+                enabled = canAdvance && !isSaving,
+                loading = isSaving,
+                size = if (page == TOTAL_PAGES - 1) TutiButtonSize.Large
+                else TutiButtonSize.Medium,
+                trailingEmoji = if (page < TOTAL_PAGES - 1) "→" else "🚀",
+                gradient = listOf(animAccent, animAccentDeep),
+            )
 
             Spacer(Modifier.height(TutiSpace.xs))
         }
@@ -511,105 +430,6 @@ private fun WelcomePage() {
     GreetingOrbit(stageHeight = 300.dp, mascotSize = 118.dp)
 
     Spacer(Modifier.height(TutiSpace.lg))
-}
-
-// ═══════════════════════════════════════════════════
-//  ВХОД НА ПЕРВОМ ШАГЕ
-// ═══════════════════════════════════════════════════
-
-/**
- * Вход через Google — единственный способ начать.
- *
- * Выход «без аккаунта» убран намеренно: без Firebase-профиля прогресс
- * живёт только на устройстве и теряется при переустановке, а рейтинг
- * и синхронизация не работают вовсе. Дешевле потребовать вход сразу,
- * чем объяснять потом, почему пропал результат.
- *
- * Правила Google требуют белую поверхность и фирменную букву, поэтому
- * здесь не общая [TutiButton] — но механика нажатия та же «плита»,
- * что и у остальных кнопок приложения.
- */
-@Composable
-private fun AuthActions(
-    isLoading: Boolean,
-    onSignIn: () -> Unit,
-) {
-    val c = MaterialTheme.tutiColors
-    val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    val shape = RoundedCornerShape(TutiRadius.lg)
-    val sink = if (pressed && !isLoading) TutiSize.plate else 0.dp
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(modifier = Modifier.fillMaxWidth().height(TutiSize.buttonLg + TutiSize.plate)) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(TutiSize.buttonLg + TutiSize.plate)
-                    .clip(shape)
-                    .background(c.cardBorder),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = sink)
-                    .height(TutiSize.buttonLg)
-                    .clip(shape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.5.dp, c.cardBorder, shape)
-                    .clickable(
-                        interactionSource = interaction,
-                        indication = null,
-                        enabled = !isLoading,
-                    ) { onSignIn() },
-                contentAlignment = Alignment.Center,
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.5.dp,
-                        color = c.jade.base,
-                    )
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "G",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Black,
-                            style = TextStyle(
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        Color(0xFF4285F4), Color(0xFF34A853),
-                                        Color(0xFFFBBC05), Color(0xFFEA4335),
-                                    ),
-                                ),
-                            ),
-                        )
-                        Spacer(Modifier.width(TutiSpace.md))
-                        Text(
-                            text = LocalTutiStrings.current.onboarding.googleSignIn,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(TutiSpace.md))
-
-        Text(
-            text = LocalTutiStrings.current.onboarding.terms,
-            style = MaterialTheme.typography.bodySmall,
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
 }
 
 @Composable

@@ -145,6 +145,11 @@ interface OnboardingStrings {
     val readyTitle: String
     val readySubtitle: String
 
+    // Анонимный вход требует сети: без неё первый запуск дальше
+    // не идёт, и это нужно объяснить словами, а не спиннером.
+    val offlineTitle: String
+    val offlineMessage: String
+
     fun minutes(count: Int): String
 }
 

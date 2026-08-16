@@ -144,6 +144,10 @@ object RuOnboarding : OnboardingStrings {
     override val readyTitle = "Всё готово! 🎉"
     override val readySubtitle = "Tuti подготовил ваш курс.\nНачнём!"
 
+    override val offlineTitle = "Нет интернета"
+    override val offlineMessage =
+        "Чтобы начать, нужно подключение к сети.\nЭто нужно только один раз."
+
     override fun minutes(count: Int) =
         "$count ${plural(count, "минута", "минуты", "минут")}"
 }

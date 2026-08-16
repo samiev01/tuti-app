@@ -19,8 +19,30 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      // Читают все авторизованные, включая анонимных: на этой коллекции
+      // построены лидерборд и рейтинг по городам, а они по своей природе
+      // читают чужие документы.
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+
+      // Плюс себе не выдаётся. isPlus и plusUntil ставит только сервер,
+      // поэтому клиенту запрещено и создавать документ с этими полями,
+      // и менять их потом. Без этого подписку обошёл бы любой, кто
+      // разберёт APK.
+      allow create: if isAdmin()
+                    || (request.auth != null
+                        && request.auth.uid == userId
+                        && !request.resource.data.keys()
+                              .hasAny(['isPlus', 'plusUntil']));
+
+      allow update: if isAdmin()
+                    || (request.auth != null
+                        && request.auth.uid == userId
+                        && !request.resource.data.diff(resource.data)
+                              .affectedKeys().hasAny(['isPlus', 'plusUntil']));
+
+      // Профиль не удаляется из приложения вовсе: на uid завязаны
+      // прогресс и место в рейтинге.
+      allow delete: if false;
 
       // Правила родителя не наследуются подколлекциями — нужен явный match.
       match /sync/{docId} {
