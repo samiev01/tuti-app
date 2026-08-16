@@ -58,6 +58,7 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSize
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ЭКРАН КУРСА
@@ -84,8 +85,8 @@ fun CourseScreen(
     if (course == null) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             TutiEmptyState(
-                title = "Курс ёфт нашуд",
-                message = "Ин курс дастрас нест. Мавзӯъҳои озодро санҷед.",
+                title = LocalTutiStrings.current.lessons.courseNotFoundTitle,
+                message = LocalTutiStrings.current.lessons.courseNotFoundMessage,
                 mascotState = TutiState.THINKING,
                 modifier = Modifier.align(Alignment.Center),
             )
@@ -160,7 +161,8 @@ private fun CourseHeader(course: Course, completed: Int, total: Int, progress: F
                         color = Color.White,
                     )
                     Text(
-                        text = "${(progress * 100).toInt()}% тамом шуд",
+                        text = LocalTutiStrings.current.lessons
+                            .percentDone((progress * 100).toInt()),
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.85f),
                     )
@@ -187,7 +189,7 @@ private fun CourseHeader(course: Course, completed: Int, total: Int, progress: F
             Spacer(Modifier.height(TutiSpace.sm))
 
             Text(
-                text = "$completed аз $total дарс тамом шуд",
+                text = LocalTutiStrings.current.lessons.lessonsDone(completed, total),
                 style = MaterialTheme.typography.labelMedium,
                 color = Color.White.copy(alpha = 0.9f),
             )
@@ -387,7 +389,7 @@ private fun LessonNode(
             if (isCurrent) {
                 Spacer(Modifier.height(TutiSpace.sm))
                 TutiPill(
-                    text = "Оғоз кунед →",
+                    text = LocalTutiStrings.current.lessons.startCourse,
                     background = c.jade.base,
                     contentColor = Color.White,
                 )

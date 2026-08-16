@@ -63,6 +63,7 @@ import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  МАШҚИ ШУНАВОӢ
@@ -93,7 +94,7 @@ fun ListeningPracticeScreen(
 
     if (!uiState.loaded) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            TutiLoadingState(message = "Машқро тайёр мекунем…")
+            TutiLoadingState(message = LocalTutiStrings.current.practice.preparingPractice)
         }
         return
     }
@@ -142,6 +143,8 @@ private fun EmptyListeningScreen(
     onBack: () -> Unit,
     onGoToLessons: () -> Unit,
 ) {
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,22 +155,27 @@ private fun EmptyListeningScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TutiEmptyState(
-            title = "Аввал калимаҳоро омӯзед!",
-            message = if (wordsCount > 0)
-                "Шумо $wordsCount калима доред. Ҳадди ақал $PRACTICE_MIN_WORDS_REQUIRED калима лозим аст."
-            else
-                "Пас аз омӯхтани калимаҳо онҳоро дар ин ҷо машқ карда метавонед.",
+            title = s.notEnoughWordsTitle,
+            message = if (wordsCount > 0) {
+                s.notEnoughWordsMessage(wordsCount, PRACTICE_MIN_WORDS_REQUIRED)
+            } else {
+                s.learnFirstMessage
+            },
             mascotState = TutiState.THINKING,
         )
         Spacer(Modifier.height(TutiSpace.lg))
         TutiButton(
-            text = "Ба дарсҳо рафтан",
+            text = s.toLessons,
             onClick = onGoToLessons,
             tone = TutiButtonTone.Sky,
             leadingEmoji = "📚",
         )
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "← Бозгашт", onClick = onBack, tone = TutiButtonTone.Sky)
+        TutiSecondaryButton(
+            text = strings.common.back,
+            onClick = onBack,
+            tone = TutiButtonTone.Sky,
+        )
     }
 }
 
@@ -185,6 +193,8 @@ private fun ListeningQuiz(
 ) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     val total = uiState.questions.size
 
     val tts = rememberTtsPlayer()
@@ -231,12 +241,12 @@ private fun ListeningQuiz(
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = "Гӯш кунед",
+                    text = s.listeningTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "${uiState.currentIndex + 1} аз $total",
+                    text = strings.common.ofCount(uiState.currentIndex + 1, total),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -259,7 +269,7 @@ private fun ListeningQuiz(
         Spacer(Modifier.height(TutiSpace.xxl))
 
         Text(
-            text = "Гӯш кунед ва тарҷумаи дурустро интихоб кунед",
+            text = s.listenAndChoose,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -322,7 +332,8 @@ private fun ListeningQuiz(
         if (uiState.answerState != ListeningAnswerState.NONE) {
             if (uiState.answerState == ListeningAnswerState.WRONG) {
                 Text(
-                    text = "Ҷавоби дуруст: ${question.options[question.correctIndex]}",
+                    text = strings.common
+                        .correctAnswer(question.options[question.correctIndex]),
                     style = MaterialTheme.typography.titleMedium,
                     color = c.correctText,
                     textAlign = TextAlign.Center,
@@ -330,7 +341,11 @@ private fun ListeningQuiz(
                 )
             }
             TutiButton(
-                text = if (uiState.currentIndex < total - 1) "Идома" else "Натиҷа",
+                text = if (uiState.currentIndex < total - 1) {
+                    strings.common.next
+                } else {
+                    strings.common.result
+                },
                 onClick = onAdvance,
                 tone = TutiButtonTone.Sky,
                 trailingEmoji = "→",

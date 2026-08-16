@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ЧАТ С AI-НАСТАВНИКОМ
@@ -132,7 +133,7 @@ fun TutiChatScreen(
 
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_CHAT,
-            text = "Бо ман гап занед! Ба русӣ ё тоҷикӣ нависед — ман кӯмак мекунам! 🦜",
+            text = LocalTutiStrings.current.chat.greetingBubble,
         )
 
         LazyColumn(
@@ -255,7 +256,7 @@ private fun ChatTopBar(isLoading: Boolean, onBack: () -> Unit) {
             Spacer(Modifier.width(TutiSpace.sm))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = "Муаллими Tuti",
+                    text = LocalTutiStrings.current.chat.title,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -268,7 +269,9 @@ private fun ChatTopBar(isLoading: Boolean, onBack: () -> Unit) {
                     )
                     Spacer(Modifier.width(5.dp))
                     Text(
-                        text = if (isLoading) "менависад…" else "онлайн",
+                        text = with(LocalTutiStrings.current.chat) {
+                            if (isLoading) typing else online
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isLoading) c.mango.onSoft else c.leaf.onSoft,
                     )
@@ -296,6 +299,7 @@ private fun ChatTopBar(isLoading: Boolean, onBack: () -> Unit) {
 @Composable
 private fun WelcomeBlock(onChip: (String) -> Unit) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.chat
 
     Column(
         modifier = Modifier
@@ -306,14 +310,14 @@ private fun WelcomeBlock(onChip: (String) -> Unit) {
         LivingTutiMascot(size = 96.dp)
         Spacer(Modifier.height(TutiSpace.lg))
         Text(
-            text = "Салом! Ман Tuti ҳастам 🦜",
+            text = s.welcomeTitle,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(TutiSpace.sm))
         Text(
-            text = "Бо ман гап занед! Ман кӯмак мекунам ва хатоҳоро ислоҳ мекунам.",
+            text = s.welcomeSubtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -323,9 +327,9 @@ private fun WelcomeBlock(onChip: (String) -> Unit) {
 
         // Затравки: три готовые реплики снимают страх «с чего начать»
         val chips = listOf(
-            Triple("👋", "Привет, как дела?", c.jade),
-            Triple("🏪", "Дар мағоза чӣ гӯям?", c.sky),
-            Triple("📝", "Грамматикаро шарҳ деҳ", c.grape),
+            Triple("👋", s.quickHello, c.jade),
+            Triple("🏪", s.quickShop, c.sky),
+            Triple("📝", s.quickGrammar, c.grape),
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(TutiSpace.sm),
@@ -426,7 +430,7 @@ private fun ChatMessageBubble(message: UiChatMessage, onRetry: () -> Unit) {
                     if (message.isError) {
                         Spacer(Modifier.height(TutiSpace.sm))
                         TutiPill(
-                            text = "Такрор",
+                            text = LocalTutiStrings.current.chat.retry,
                             leadingEmoji = "↻",
                             background = c.coral.base,
                             contentColor = Color.White,
@@ -546,7 +550,7 @@ private fun ChatInputBar(
                 modifier = Modifier.weight(1f),
                 placeholder = {
                     Text(
-                        text = "Ба русӣ ё тоҷикӣ нависед…",
+                        text = LocalTutiStrings.current.chat.inputPlaceholder,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

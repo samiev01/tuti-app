@@ -4,10 +4,12 @@ import android.util.Log
 import app.tuti.tj.data.content.ContentProvider
 import app.tuti.tj.data.content.FreeTopicsRegistry
 import app.tuti.tj.data.local.dao.CourseProgressDao
+import app.tuti.tj.data.local.dao.LanguageStatsDao
 import app.tuti.tj.data.local.dao.ProgressDao
 import app.tuti.tj.data.local.dao.UserDao
 import app.tuti.tj.data.local.dao.WordDao
 import app.tuti.tj.data.local.entity.DailyStreakEntity
+import app.tuti.tj.data.local.entity.LanguageStatsEntity
 import app.tuti.tj.data.local.entity.LearnedWordEntity
 import app.tuti.tj.data.local.entity.LessonProgressEntity
 import app.tuti.tj.data.local.entity.ModuleProgressEntity
@@ -25,6 +27,7 @@ class TutiRepository(
     private val progressDao: ProgressDao,
     private val wordDao: WordDao,
     private val courseProgressDao: CourseProgressDao,
+    private val languageStatsDao: LanguageStatsDao,
 ) {
 
     // ── user ──────────────────────────────────────
@@ -59,6 +62,45 @@ class TutiRepository(
 
     suspend fun addXp(amount: Int) = withContext(Dispatchers.IO) {
         userDao.updateXp(amount)
+        val language = currentLanguage()
+        ensureLanguageStats(language)
+        languageStatsDao.addXp(language, amount)
+    }
+
+    // ── статистика по языкам ──────────────────────
+
+    fun getLanguageStats(language: String): Flow<LanguageStatsEntity?> =
+        languageStatsDao.getStats(language)
+
+    private suspend fun currentLanguage(): String =
+        if (userDao.getUserOnce()?.selectedLanguage == "english") "english" else "russian"
+
+    /**
+     * Создаёт строку статистики языка, если её ещё нет.
+     *
+     * Первый созданный язык забирает общие цифры пользователя: так после
+     * восстановления из облака (миграции там не было) прогресс не теряется.
+     * Все следующие языки начинаются с нуля.
+     */
+    private suspend fun ensureLanguageStats(language: String) {
+        if (languageStatsDao.getStatsOnce(language) != null) return
+        val user = userDao.getUserOnce()
+        val inherit = languageStatsDao.countRows() == 0 &&
+            user != null &&
+            user.selectedLanguage == language
+        languageStatsDao.insertStats(
+            LanguageStatsEntity(
+                language = language,
+                totalXp = if (inherit) user.totalXp else 0,
+                currentStreak = if (inherit) user.currentStreak else 0,
+                longestStreak = if (inherit) user.longestStreak else 0,
+            )
+        )
+    }
+
+    /** Вызывается с главного экрана при каждой смене языка. */
+    suspend fun ensureLanguageStatsExist(language: String) = withContext(Dispatchers.IO) {
+        ensureLanguageStats(language)
     }
 
     /**
@@ -140,13 +182,15 @@ class TutiRepository(
         )
 
         userDao.updateXp(xpEarned)
+        ensureLanguageStats(language)
+        languageStatsDao.addXp(language, xpEarned)
 
         if (newPercent >= 70) {
             unlockNextTopic(topicId, language)
         }
 
-        updateDailyStreak(xpEarned = xpEarned, lessonsCompleted = 1)
-        checkAndUpdateStreak()
+        updateDailyStreak(language = language, xpEarned = xpEarned, lessonsCompleted = 1)
+        checkAndUpdateStreak(language)
     }
 
     private suspend fun unlockNextTopic(currentTopicId: String, language: String) {
@@ -163,7 +207,11 @@ class TutiRepository(
 
     // ── words ─────────────────────────────────────
 
+    /** Все слова аккаунта: достижения и рейтинг считают их общими. */
     fun getTotalLearnedWords(): Flow<Int> = wordDao.getTotalLearnedWords()
+
+    fun getLearnedWordsCount(language: String): Flow<Int> =
+        wordDao.getLearnedWordsForLanguage(language)
 
     fun getWordsForReview(currentTime: Long): Flow<List<LearnedWordEntity>> =
         wordDao.getWordsForReview(currentTime)
@@ -344,6 +392,12 @@ class TutiRepository(
         userDao.updateXp(xpEarned)
 
         val lesson = courseProgressDao.getLessonProgressOnce(lessonId) ?: return@withContext
+        // Язык берём из курса урока: он мог отличаться от выбранного,
+        // если пользователь переключил язык, не выходя с экрана урока.
+        val language = ContentProvider.getCourseById(lesson.courseId)?.language ?: currentLanguage()
+        ensureLanguageStats(language)
+        languageStatsDao.addXp(language, xpEarned)
+
         val moduleLessons = courseProgressDao.getLessonProgressForModuleOnce(lesson.moduleId)
         val completedCount = moduleLessons.count { it.completed }
         courseProgressDao.updateModuleProgress(lesson.moduleId, completedCount)
@@ -352,8 +406,8 @@ class TutiRepository(
         // «N калима», и профиль должен показать их не дожидаясь бэкфилла.
         saveLessonWords(lessonId, lesson.courseId)
 
-        updateDailyStreak(xpEarned = xpEarned, lessonsCompleted = 1)
-        checkAndUpdateStreak()
+        updateDailyStreak(language = language, xpEarned = xpEarned, lessonsCompleted = 1)
+        checkAndUpdateStreak(language)
     }
 
     suspend fun isLessonUnlocked(lessonId: String, courseId: String): Boolean =
@@ -421,15 +475,15 @@ class TutiRepository(
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
-    fun getTodayStats(): Flow<DailyStreakEntity?> =
-        progressDao.getTodayStats(todayString())
+    fun getTodayStats(language: String): Flow<DailyStreakEntity?> =
+        progressDao.getTodayStats(todayString(), language)
 
-    fun getWeekStreaks(): Flow<List<DailyStreakEntity>> =
-        progressDao.getWeekStreaks()
+    fun getWeekStreaks(language: String): Flow<List<DailyStreakEntity>> =
+        progressDao.getWeekStreaks(language)
 
-    private suspend fun updateDailyStreak(xpEarned: Int, lessonsCompleted: Int) {
+    private suspend fun updateDailyStreak(language: String, xpEarned: Int, lessonsCompleted: Int) {
         val today = todayString()
-        val existing = progressDao.getDailyStreakOnce(today)
+        val existing = progressDao.getDailyStreakOnce(today, language)
         if (existing != null) {
             progressDao.insertDailyStreak(
                 existing.copy(
@@ -442,6 +496,7 @@ class TutiRepository(
             progressDao.insertDailyStreak(
                 DailyStreakEntity(
                     date = today,
+                    language = language,
                     xpEarned = xpEarned,
                     lessonsCompleted = lessonsCompleted,
                     minutesStudied = 1,
@@ -450,33 +505,49 @@ class TutiRepository(
         }
     }
 
-    suspend fun checkAndUpdateStreak() = withContext(Dispatchers.IO) {
+    /**
+     * Серия пересчитывается по дням занятий, а не наращивается счётчиком:
+     * прежняя логика прибавляла день на каждый урок, а после разделения
+     * языков считать надо две дорожки — по языку и общую по аккаунту.
+     */
+    suspend fun checkAndUpdateStreak(language: String) = withContext(Dispatchers.IO) {
         val user = userDao.getUserOnce() ?: return@withContext
-        val today = todayString()
-        val yesterday = run {
-            val cal = Calendar.getInstance()
+
+        ensureLanguageStats(language)
+        val stats = languageStatsDao.getStatsOnce(language)
+        val langStreak = streakLength(progressDao.getStudyDates(language))
+        languageStatsDao.updateStreak(
+            language = language,
+            streak = langStreak,
+            longest = maxOf(langStreak, stats?.longestStreak ?: 0),
+        )
+
+        // Общая серия аккаунта: её показывает рейтинг и напоминания.
+        val globalStreak = streakLength(progressDao.getAllStudyDates())
+        userDao.updateStreakWithLongest(
+            streak = globalStreak,
+            longest = maxOf(globalStreak, user.longestStreak),
+        )
+    }
+
+    /**
+     * Длина цепочки занятий подряд, считая от сегодня.
+     * Вчерашняя цепочка ещё жива: день не закрыт, пока не наступило завтра.
+     */
+    private fun streakLength(dates: List<String>): Int {
+        if (dates.isEmpty()) return 0
+        val studied = dates.toSet()
+        val cal = Calendar.getInstance()
+        if (dateFormat.format(cal.time) !in studied) {
             cal.add(Calendar.DAY_OF_YEAR, -1)
-            dateFormat.format(cal.time)
+            if (dateFormat.format(cal.time) !in studied) return 0
         }
-
-        val studiedToday = progressDao.getDailyStreakOnce(today) != null
-        val studiedYesterday = progressDao.getDailyStreakOnce(yesterday) != null
-
-        val newStreak = when {
-            studiedToday && studiedYesterday -> user.currentStreak.coerceAtLeast(1)
-            studiedToday && !studiedYesterday -> 1
-            else -> 0
+        var count = 0
+        while (dateFormat.format(cal.time) in studied) {
+            count++
+            cal.add(Calendar.DAY_OF_YEAR, -1)
         }
-
-        if (studiedToday && newStreak == 1 && user.currentStreak == 0) {
-            val updatedStreak = user.currentStreak + 1
-            val longest = maxOf(updatedStreak, user.longestStreak)
-            userDao.updateStreakWithLongest(updatedStreak, longest)
-        } else if (studiedToday && studiedYesterday && newStreak >= user.currentStreak) {
-            val updatedStreak = user.currentStreak + 1
-            val longest = maxOf(updatedStreak, user.longestStreak)
-            userDao.updateStreakWithLongest(updatedStreak, longest)
-        }
+        return count
     }
 
     private fun todayString(): String = dateFormat.format(System.currentTimeMillis())

@@ -40,6 +40,8 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSize
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.PracticeStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ЭКРАН ПРАКТИКИ
@@ -61,11 +63,11 @@ private data class PracticeMode(
     val isFeatured: Boolean = false,
 )
 
-private val practiceModes = listOf(
+private fun practiceModes(s: PracticeStrings) = listOf(
     PracticeMode(
         emoji = "",
-        title = "Муаллими Tuti",
-        description = "Бо AI сӯҳбат кунед ва машқ кунед",
+        title = s.chatTitle,
+        description = s.chatDescription,
         accent = TutiAccentRef.Jade,
         limitKey = "chat",
         limitMax = FreeLimits.MAX_CHAT_MESSAGES_PER_DAY,
@@ -73,24 +75,24 @@ private val practiceModes = listOf(
     ),
     PracticeMode(
         emoji = "🃏",
-        title = "Корти калимаҳо",
-        description = "Такрори интервалӣ",
+        title = s.flashcardsTitle,
+        description = s.flashcardsDescription,
         accent = TutiAccentRef.Grape,
         limitKey = "flashcards",
         limitMax = FreeLimits.MAX_FLASHCARDS_PER_DAY,
     ),
     PracticeMode(
         emoji = "🎧",
-        title = "Гӯш кунед",
-        description = "Машқи шунавоӣ",
+        title = s.listeningTitle,
+        description = s.listeningDescription,
         accent = TutiAccentRef.Sky,
         limitKey = "listening",
         limitMax = FreeLimits.MAX_LISTENING_PER_DAY,
     ),
     PracticeMode(
         emoji = "✍️",
-        title = "Навиштан",
-        description = "Машқи имло",
+        title = s.writingTitle,
+        description = s.writingDescription,
         accent = TutiAccentRef.Mango,
         limitKey = null,
         limitMax = 0,
@@ -106,6 +108,8 @@ fun PracticeScreen(
 ) {
     val context = LocalContext.current
     val isPlus = remember { PlusManager.isPlusActive(context) }
+    val s = LocalTutiStrings.current.practice
+    val modes = remember(s) { practiceModes(s) }
 
     Column(
         modifier = Modifier
@@ -120,7 +124,7 @@ fun PracticeScreen(
         Spacer(Modifier.height(TutiSpace.section))
 
         Column(verticalArrangement = Arrangement.spacedBy(TutiSpace.md)) {
-            practiceModes.forEachIndexed { index, mode ->
+            modes.forEachIndexed { index, mode ->
                 val remaining = if (isPlus || mode.limitKey == null) null
                 else FreeLimits.getRemainingCount(context, mode.limitKey, mode.limitMax)
 
@@ -150,12 +154,12 @@ private fun Header() {
             Spacer(Modifier.width(TutiSpace.md))
             Column {
                 Text(
-                    text = "Машқ",
+                    text = LocalTutiStrings.current.practice.title,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "Навъи машқро интихоб кунед",
+                    text = LocalTutiStrings.current.practice.chooseMode,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -172,6 +176,7 @@ private fun PracticeModeCard(
     onClick: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.practice
     val accent = mode.accent.resolve()
     val exhausted = remaining != null && remaining == 0
 
@@ -229,7 +234,11 @@ private fun PracticeModeCard(
                 if (remaining != null) {
                     Spacer(Modifier.height(TutiSpace.sm))
                     TutiPill(
-                        text = if (exhausted) "Лимит тамом" else "$remaining/${mode.limitMax} боқӣ",
+                        text = if (exhausted) {
+                            s.limitReached
+                        } else {
+                            s.remaining(remaining, mode.limitMax)
+                        },
                         leadingEmoji = if (exhausted) "⛔" else "⚡",
                         background = if (exhausted) c.coral.soft else MaterialTheme.colorScheme.surface,
                         contentColor = if (exhausted) c.coral.onSoft else accent.onSoft,
@@ -237,7 +246,7 @@ private fun PracticeModeCard(
                 } else if (isPlus && mode.limitKey != null) {
                     Spacer(Modifier.height(TutiSpace.sm))
                     TutiPill(
-                        text = "Бемаҳдуд",
+                        text = s.unlimited,
                         leadingEmoji = "♾️",
                         background = c.mango.soft,
                         contentColor = c.mango.onSoft,

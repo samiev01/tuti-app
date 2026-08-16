@@ -32,6 +32,8 @@ enum class QuestionType {
 data class TopicInfo(
     val id: String,
     val name: String,
+    /** Русское название темы — для интерфейса на русском языке. */
+    val nameRu: String = name,
     val subtitle: String,
     val emoji: String,
     val totalWords: Int,

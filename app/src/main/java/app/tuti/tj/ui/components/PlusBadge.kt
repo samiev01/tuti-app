@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 /**
  * Статус Plus. Единая капсула в mango-семействе — тот же цвет,
@@ -26,6 +27,7 @@ import app.tuti.tj.ui.theme.tutiColors
 @Composable
 fun PlusBadge(daysRemaining: Int = 0) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(TutiRadius.pill))
@@ -37,7 +39,7 @@ fun PlusBadge(daysRemaining: Int = 0) {
         Text("⭐", fontSize = 11.sp)
         Spacer(Modifier.width(4.dp))
         Text(
-            text = if (daysRemaining > 0) "Plus · $daysRemaining рӯз" else "Plus",
+            text = if (daysRemaining > 0) s.plus.plusDaysBadge(daysRemaining) else "Plus",
             style = MaterialTheme.typography.labelSmall,
             color = c.mango.onSoft,
         )
@@ -49,7 +51,7 @@ fun PlusBadge(daysRemaining: Int = 0) {
 fun FreeBadge() {
     val c = MaterialTheme.tutiColors
     Text(
-        text = "Ройгон",
+        text = LocalTutiStrings.current.plus.freeBadge,
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier

@@ -26,6 +26,7 @@ import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 /**
  * Сборка предложения из слов.
@@ -83,7 +84,7 @@ fun BuildSentenceExercise(
         ) {
             if (builtWords.isEmpty()) {
                 Text(
-                    text = "Калимаҳоро зер кунед…",
+                    text = LocalTutiStrings.current.practice.tapWordsPlaceholder,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

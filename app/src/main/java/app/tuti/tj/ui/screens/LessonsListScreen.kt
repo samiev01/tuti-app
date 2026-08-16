@@ -43,6 +43,9 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSize
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.localizedName
+import app.tuti.tj.ui.i18n.localizedSubtitle
 
 // ════════════════════════════════════════════════════════════════
 //  ВКЛАДКА «ДАРСҲО»
@@ -95,6 +98,7 @@ fun LessonsListScreen(
 
     val allTopicInfos = remember { ContentProvider.getAllTopics() }
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.lessons
 
     Column(
         modifier = Modifier
@@ -111,12 +115,12 @@ fun LessonsListScreen(
             Spacer(Modifier.width(TutiSpace.md))
             Column {
                 Text(
-                    text = "Дарсҳо",
+                    text = s.title,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "Мавзӯъро интихоб кунед",
+                    text = s.chooseTopic,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -139,12 +143,12 @@ fun LessonsListScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text(
-                            text = "Пешрафти шумо",
+                            text = s.yourProgress,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.85f),
                         )
                         Text(
-                            text = "$completedCount аз ${allTopicInfos.size} мавзӯъ тамом шуд",
+                            text = s.topicsDone(completedCount, allTopicInfos.size),
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White,
                         )
@@ -196,6 +200,10 @@ private fun LessonTopicCard(
     onClick: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.lessons
+    val title = info.localizedName(strings)
+    val subtitle = localizedSubtitle(title, info.subtitle)
     val progress = (dbTopic?.progressPercent ?: 0) / 100f
     val isLocked = dbTopic?.isUnlocked == false || dbTopic == null
     val isDone = progress >= 1f
@@ -227,16 +235,18 @@ private fun LessonTopicCard(
                 Spacer(Modifier.width(TutiSpace.md))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        text = info.name,
+                        text = title,
                         style = MaterialTheme.typography.titleLarge,
                         color = if (isLocked) c.lockedContent
                         else MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(
-                        text = info.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (subtitle.isNotBlank()) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 Spacer(Modifier.width(TutiSpace.sm))
                 when {
@@ -263,13 +273,13 @@ private fun LessonTopicCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TutiPill(
-                    text = "${info.totalWords} калима",
+                    text = s.wordsCount(info.totalWords),
                     leadingEmoji = "📝",
                     background = c.sky.soft,
                     contentColor = c.sky.onSoft,
                 )
                 TutiPill(
-                    text = "${info.totalQuestions} савол",
+                    text = s.questionsCount(info.totalQuestions),
                     leadingEmoji = "❓",
                     background = c.grape.soft,
                     contentColor = c.grape.onSoft,
@@ -279,9 +289,9 @@ private fun LessonTopicCard(
                     Spacer(Modifier.weight(1f))
                     TutiPill(
                         text = when {
-                            isDone -> "Аз нав 🔄"
-                            progress == 0f -> "Оғоз →"
-                            else -> "Давом →"
+                            isDone -> s.restartTopic
+                            progress == 0f -> s.startTopic
+                            else -> s.continueTopic
                         },
                         background = if (isDone) c.leaf.soft else c.jade.base,
                         contentColor = if (isDone) c.leaf.onSoft else Color.White,

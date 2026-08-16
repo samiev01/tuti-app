@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.PracticeStrings
 import app.tuti.tj.ui.mascot.TutiMascotVector
 import app.tuti.tj.ui.mascot.TutiState
 import app.tuti.tj.ui.theme.TutiRadius
@@ -42,18 +44,18 @@ import app.tuti.tj.ui.theme.tutiColors
 // ════════════════════════════════════════════════════════════════
 
 /** Заголовок подбирается по результату — тон обратной связи важнее числа. */
-private fun titleFor(percent: Int): String = when {
-    percent >= 90 -> "Олӣ! 🏆"
-    percent >= 80 -> "Аъло! 🎉"
-    percent >= 60 -> "Хуб! 👍"
-    percent >= 40 -> "Мешавад! 💪"
-    else -> "Аз нав кӯшиш кунед 🌱"
+private fun titleFor(percent: Int, s: PracticeStrings): String = when {
+    percent >= 90 -> s.resultPerfect
+    percent >= 80 -> s.resultExcellent
+    percent >= 60 -> s.resultGood
+    percent >= 40 -> s.resultOk
+    else -> s.resultRetry
 }
 
-private fun subtitleFor(percent: Int): String = when {
-    percent >= 80 -> "Шумо ин мавзӯъро хуб медонед."
-    percent >= 60 -> "Каме такрор — ва натиҷа беҳтар мешавад."
-    else -> "Такрор модари таълим аст. Боз як бор кӯшиш кунед!"
+private fun subtitleFor(percent: Int, s: PracticeStrings): String = when {
+    percent >= 80 -> s.resultSubtitleGood
+    percent >= 60 -> s.resultSubtitleOk
+    else -> s.resultSubtitleRetry
 }
 
 @Composable
@@ -63,15 +65,16 @@ fun TutiPracticeResult(
     onPrimary: () -> Unit,
     onRestart: () -> Unit,
     modifier: Modifier = Modifier,
-    primaryText: String = "Ба асосӣ",
+    primaryText: String = LocalTutiStrings.current.common.toHome,
     primaryEmoji: String = "🏠",
-    restartText: String = "Аз нав",
-    correctLabel: String = "дуруст ҷавоб",
-    wrongLabel: String = "нодуруст",
+    restartText: String = LocalTutiStrings.current.common.restart,
+    correctLabel: String = LocalTutiStrings.current.practice.correctAnswerLabel,
+    wrongLabel: String = LocalTutiStrings.current.practice.wrongAnswerLabel,
     accentColor: Color? = null,
     xpEarned: Int? = null,
 ) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current
     val wrong = (total - correct).coerceAtLeast(0)
     val percent = if (total > 0) (correct * 100 / total) else 0
     val ring = accentColor ?: c.jade.base
@@ -99,14 +102,14 @@ fun TutiPracticeResult(
         Spacer(Modifier.height(TutiSpace.lg))
 
         Text(
-            text = titleFor(percent),
+            text = titleFor(percent, s.practice),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(TutiSpace.xs))
         Text(
-            text = subtitleFor(percent),
+            text = subtitleFor(percent, s.practice),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -125,7 +128,7 @@ fun TutiPracticeResult(
         if (xpEarned != null && xpEarned > 0) {
             Spacer(Modifier.height(TutiSpace.lg))
             TutiPill(
-                text = "+$xpEarned очки",
+                text = s.common.xp(xpEarned),
                 leadingEmoji = "💎",
                 background = c.grape.soft,
                 contentColor = c.grape.onSoft,

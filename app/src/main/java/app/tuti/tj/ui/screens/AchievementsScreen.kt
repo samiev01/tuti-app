@@ -63,6 +63,8 @@ import app.tuti.tj.ui.theme.tutiColors
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import app.tuti.tj.ui.i18n.DEFAULT_CITY
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 private const val PREFS = "tuti_prefs"
 private const val HIDDEN_ACHIEVEMENTS_TEASER = 3
@@ -83,6 +85,7 @@ fun AchievementsScreen(
 ) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
     val prefs = remember { context.getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
     val scope = rememberCoroutineScope()
 
@@ -108,7 +111,7 @@ fun AchievementsScreen(
 
     val achievements = remember(
         streak, lessonsDone, wordsLearned, chatTotal,
-        perfectLessons, modulesDone, languagesStarted,
+        perfectLessons, modulesDone, languagesStarted, strings,
     ) {
         buildAchievements(
             streak = streak,
@@ -118,6 +121,7 @@ fun AchievementsScreen(
             perfectLessons = perfectLessons,
             modulesCompleted = modulesDone,
             languagesStarted = languagesStarted,
+            s = strings.achievements,
         )
     }
 
@@ -157,6 +161,7 @@ fun AchievementsScreen(
                     perfectLessons = perfectLessons,
                     modulesCompleted = modulesDone,
                     languagesStarted = languagesStarted,
+                    s = strings.achievements,
                 ),
             )
         }
@@ -164,9 +169,12 @@ fun AchievementsScreen(
 
     val firebaseUser = remember { FirebaseAuth.getInstance().currentUser }
     val displayName = firebaseUser?.displayName?.takeIf { it.isNotBlank() }
-        ?: user?.name ?: "Корбар"
+        ?: user?.name ?: strings.common.user
     val photoUrl = firebaseUser?.photoUrl?.toString()
-    val userCity = remember { prefs.getString("user_city", "Душанбе") ?: "Душанбе" }
+    // В prefs город лежит по-таджикски — показываем его на языке интерфейса.
+    val userCity = strings.cities.name(
+        remember { prefs.getString("user_city", DEFAULT_CITY) ?: DEFAULT_CITY },
+    )
     val isPlusUser = remember { PlusManager.isPlusActive(context) }
 
     Box(
@@ -189,12 +197,12 @@ fun AchievementsScreen(
                 Spacer(Modifier.width(TutiSpace.md))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        text = "Дастовардҳо 🎖️",
+                        text = strings.achievements.title,
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "$completedCount аз $totalCount кушода шуд",
+                        text = strings.achievements.unlockedCount(completedCount, totalCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -252,10 +260,10 @@ fun AchievementsScreen(
 
         celebrationAchievement?.let { ach ->
             TutiCelebrationDialog(
-                title = "Дастовард кушода шуд!",
+                title = strings.achievements.unlockedTitle,
                 message = ach.title,
                 onDismiss = { },
-                primaryText = "Аъло!",
+                primaryText = strings.achievements.unlockedButton,
                 onPrimary = {
                     scope.launch {
                         runCatching {
@@ -274,6 +282,7 @@ fun AchievementsScreen(
                             perfectLessons = perfectLessons,
                             modulesCompleted = modulesDone,
                             languagesStarted = languagesStarted,
+                            s = strings.achievements,
                         )
                         celebrationAchievement = list.firstOrNull { a ->
                             a.isCompleted &&
@@ -282,8 +291,8 @@ fun AchievementsScreen(
                     }
                 },
                 stats = listOf(
-                    ach.icon to "нишон",
-                    "+${ach.xpReward}" to "очки",
+                    ach.icon to strings.achievements.badgeLabel,
+                    "+${ach.xpReward}" to strings.common.points,
                 ),
             )
         }
@@ -338,10 +347,11 @@ private fun UserStatsCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
         ) {
-            MiniStat("🔥", streak.toString(), "Серия", Modifier.weight(1f))
-            MiniStat("📚", lessons.toString(), "Дарсҳо", Modifier.weight(1f))
-            MiniStat("⭐", words.toString(), "Калимаҳо", Modifier.weight(1f))
-            MiniStat("🏅", if (rank > 0) "#$rank" else "—", "Ҷойгоҳ", Modifier.weight(1f))
+            val common = LocalTutiStrings.current.common
+            MiniStat("🔥", streak.toString(), common.streakLabel, Modifier.weight(1f))
+            MiniStat("📚", lessons.toString(), common.lessonsLabel, Modifier.weight(1f))
+            MiniStat("⭐", words.toString(), common.wordsLabel, Modifier.weight(1f))
+            MiniStat("🏅", if (rank > 0) "#$rank" else "—", common.rankLabel, Modifier.weight(1f))
         }
     }
 }
@@ -385,7 +395,7 @@ private fun OverallProgressCard(completed: Int, total: Int) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Пешрафти умумӣ",
+                text = LocalTutiStrings.current.achievements.overallProgress,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
@@ -525,14 +535,15 @@ private fun HiddenAchievementsTeaser() {
             }
             Spacer(Modifier.height(TutiSpace.md))
             Text(
-                text = "Боз $HIDDEN_ACHIEVEMENTS_TEASER дастоварди пинҳон",
+                text = LocalTutiStrings.current.achievements
+                    .hiddenTeaser(HIDDEN_ACHIEVEMENTS_TEASER),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(TutiSpace.xs))
             Text(
-                text = "Омӯзишро давом диҳед барои кушодан!",
+                text = LocalTutiStrings.current.achievements.hiddenSubtitle,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

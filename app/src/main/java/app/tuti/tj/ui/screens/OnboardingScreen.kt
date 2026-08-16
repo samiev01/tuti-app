@@ -71,6 +71,10 @@ import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import app.tuti.tj.ui.i18n.DEFAULT_CITY
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.OnboardingStrings
+import app.tuti.tj.ui.i18n.TutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ОНБОРДИНГ
@@ -97,42 +101,48 @@ private val stepTones = listOf(
 
 private data class OptionItem(val emoji: String, val label: String, val sublabel: String)
 
-private val languageOptions = listOf(
-    OptionItem("🇷🇺", "Русский язык", "Забони русӣ"),
-    OptionItem("🇬🇧", "English", "Забони англисӣ"),
+private fun languageOptions(s: OnboardingStrings) = listOf(
+    OptionItem("🇷🇺", s.optionRussian, s.optionRussianHint),
+    OptionItem("🇬🇧", s.optionEnglish, s.optionEnglishHint),
 )
-private val levelOptions = listOf(
-    OptionItem("🌱", "Ибтидоӣ", "Ман навам"),
-    OptionItem("📚", "Миёна", "Каме медонам"),
-    OptionItem("🚀", "Пешрафта", "Хуб медонам"),
+private fun levelOptions(s: OnboardingStrings) = listOf(
+    OptionItem("🌱", s.levelBeginner, s.levelBeginnerHint),
+    OptionItem("📚", s.levelIntermediate, s.levelIntermediateHint),
+    OptionItem("🚀", s.levelAdvanced, s.levelAdvancedHint),
 )
-private val goalOptions = listOf(
-    OptionItem("💼", "Барои кор", "Кор дар Русия/хориҷа"),
-    OptionItem("🎓", "Барои таҳсил", "Донишгоҳ/мактаб"),
-    OptionItem("✈️", "Барои сафар", "Сайёҳӣ ва муҳоҷират"),
-    OptionItem("🧠", "Барои худам", "Рушди шахсӣ"),
+private fun goalOptions(s: OnboardingStrings) = listOf(
+    OptionItem("💼", s.goalWork, s.goalWorkHint),
+    OptionItem("🎓", s.goalStudy, s.goalStudyHint),
+    OptionItem("✈️", s.goalTravel, s.goalTravelHint),
+    OptionItem("🧠", s.goalPersonal, s.goalPersonalHint),
 )
-private val timeOptions = listOf(
-    OptionItem("☕", "5 дақиқа", "Оҳиста"),
-    OptionItem("📖", "10 дақиқа", "Мӯътадил"),
-    OptionItem("💪", "15 дақиқа", "Ҷиддӣ"),
-    OptionItem("🔥", "20 дақиқа", "Максимум"),
+private fun timeOptions(s: OnboardingStrings) = listOf(
+    OptionItem("☕", s.minutes(5), s.timeCalm),
+    OptionItem("📖", s.minutes(10), s.timeModerate),
+    OptionItem("💪", s.minutes(15), s.timeSerious),
+    OptionItem("🔥", s.minutes(20), s.timeMax),
 )
-private val cityOptions = listOf(
-    OptionItem("🏛️", "Душанбе", "Пойтахт"),
-    OptionItem("🏔️", "Хуҷанд", "Шимол"),
-    OptionItem("☀️", "Бохтар", "Ҷануб"),
-    OptionItem("🌿", "Кӯлоб", "Хатлон"),
-    OptionItem("🏰", "Истаравшан", "Суғд"),
-    OptionItem("🍑", "Конибодом", "Суғд"),
-    OptionItem("📚", "Турсунзода", "НТМ"),
-    OptionItem("🎨", "Пенҷикент", "Суғд"),
-    OptionItem("🌾", "Ғафуров", "Суғд"),
-    OptionItem("🏗️", "Ваҳдат", "НТМ"),
-    OptionItem("🌄", "Исфара", "Суғд"),
-    OptionItem("🔧", "Норак", "Хатлон"),
-    OptionItem("🏭", "Ёвон", "Хатлон"),
-    OptionItem("🏘️", "Дигар", "Шаҳри дигар"),
+
+/**
+ * Порядок совпадает с [cityDbValues]: выбор хранится индексом.
+ * Название города переводится, а в базу уходит таджикский вариант —
+ * иначе рейтинг разъехался бы на две группы по одному и тому же городу.
+ */
+private fun cityOptions(s: TutiStrings) = listOf(
+    OptionItem("🏛️", s.cities.name("Душанбе"), s.cities.regionCapital),
+    OptionItem("🏔️", s.cities.name("Хуҷанд"), s.cities.regionNorth),
+    OptionItem("☀️", s.cities.name("Бохтар"), s.cities.regionSouth),
+    OptionItem("🌿", s.cities.name("Кӯлоб"), s.cities.regionKhatlon),
+    OptionItem("🏰", s.cities.name("Истаравшан"), s.cities.regionSughd),
+    OptionItem("🍑", s.cities.name("Конибодом"), s.cities.regionSughd),
+    OptionItem("📚", s.cities.name("Турсунзода"), s.cities.regionCentral),
+    OptionItem("🎨", s.cities.name("Пенҷикент"), s.cities.regionSughd),
+    OptionItem("🌾", s.cities.name("Ғафуров"), s.cities.regionSughd),
+    OptionItem("🏗️", s.cities.name("Ваҳдат"), s.cities.regionCentral),
+    OptionItem("🌄", s.cities.name("Исфара"), s.cities.regionSughd),
+    OptionItem("🔧", s.cities.name("Норак"), s.cities.regionKhatlon),
+    OptionItem("🏭", s.cities.name("Ёвон"), s.cities.regionKhatlon),
+    OptionItem("🏘️", s.cities.name("Дигар"), s.cities.regionOther),
 )
 
 private val languageDbValues = listOf("russian", "english")
@@ -159,6 +169,8 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
     val c = MaterialTheme.tutiColors
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val strings = LocalTutiStrings.current
+    val s = strings.onboarding
 
     var page by remember { mutableIntStateOf(0) }
     // Вход слился с приветствием: отдельного экрана логина больше нет.
@@ -178,7 +190,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
             if (restored) {
                 Toast.makeText(
                     context,
-                    "☁️ Маълумоти шумо барқарор шуд!",
+                    s.cloudRestored,
                     Toast.LENGTH_SHORT,
                 ).show()
                 onComplete()
@@ -228,8 +240,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
 
     // Подзаголовок шага «уровень» зависит от выбранного языка —
     // вопрос должен звучать про конкретный язык, а не абстрактно.
-    val levelSubtitle = if (langIdx == 1) "Забони англисиро чӣ қадар медонед?"
-    else "Забони русиро чӣ қадар медонед?"
+    val levelSubtitle = if (langIdx == 1) s.levelSubtitleEnglish else s.levelSubtitleRussian
 
     Box(
         modifier = Modifier
@@ -265,41 +276,41 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                 when (page) {
                     0 -> WelcomePage()
                     1 -> SelectionPage(
-                        title = "Кадом забон?",
-                        subtitle = "Кадом забонро омӯхтан мехоҳед?",
-                        options = languageOptions,
+                        title = s.languageTitle,
+                        subtitle = s.languageSubtitle,
+                        options = languageOptions(s),
                         selected = langIdx,
                         accent = animAccent,
                         onSelect = { langIdx = it },
                     )
                     2 -> SelectionPage(
-                        title = "Сатҳи шумо?",
+                        title = s.levelTitle,
                         subtitle = levelSubtitle,
-                        options = levelOptions,
+                        options = levelOptions(s),
                         selected = levelIdx,
                         accent = animAccent,
                         onSelect = { levelIdx = it },
                     )
                     3 -> SelectionPage(
-                        title = "Ҳадафи шумо?",
-                        subtitle = "Барои чӣ забон меомӯзед?",
-                        options = goalOptions,
+                        title = s.goalTitle,
+                        subtitle = s.goalSubtitle,
+                        options = goalOptions(s),
                         selected = goalIdx,
                         accent = animAccent,
                         onSelect = { goalIdx = it },
                     )
                     4 -> SelectionPage(
-                        title = "Вақти омӯзиш?",
-                        subtitle = "Дар як рӯз чанд вақт омӯхтан мехоҳед?",
-                        options = timeOptions,
+                        title = s.timeTitle,
+                        subtitle = s.timeSubtitle,
+                        options = timeOptions(s),
                         selected = timeIdx,
                         accent = animAccent,
                         onSelect = { timeIdx = it },
                     )
                     5 -> SelectionPage(
-                        title = "Шаҳри шумо?",
-                        subtitle = "Барои рейтинги шаҳрҳо",
-                        options = cityOptions,
+                        title = s.cityTitle,
+                        subtitle = s.citySubtitle,
+                        options = cityOptions(strings),
                         selected = cityIdx,
                         accent = animAccent,
                         onSelect = { cityIdx = it },
@@ -319,7 +330,11 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                 )
             } else {
                 TutiButton(
-                    text = if (page < TOTAL_PAGES - 1) "Давом" else "Оғоз кардан!",
+                    text = if (page < TOTAL_PAGES - 1) {
+                        strings.common.continueShort
+                    } else {
+                        strings.common.startAction
+                    },
                     onClick = {
                         if (page < TOTAL_PAGES - 1) {
                             page++
@@ -332,7 +347,7 @@ fun OnboardingScreen(repository: TutiRepository, onComplete: () -> Unit) {
                                         levelDbValues.getOrElse(levelIdx ?: 0) { "beginner" }
                                     val goal = goalDbValues.getOrElse(goalIdx ?: 0) { "personal" }
                                     val minutes = dailyMinutesValues.getOrElse(timeIdx ?: 0) { 5 }
-                                    val city = cityDbValues.getOrElse(cityIdx ?: 0) { "Душанбе" }
+                                    val city = cityDbValues.getOrElse(cityIdx ?: 0) { DEFAULT_CITY }
                                     val langSuffix =
                                         if (language == "english") "english" else "russian"
                                     val courseId = "${goal}_$langSuffix"
@@ -386,9 +401,11 @@ private fun TopRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // На первом шаге кнопки «назад» нет: языком занялся экран
+        // запуска, а возвращаться из приветствия некуда.
         if (page > 0) {
             Text(
-                text = "← Бозгашт",
+                text = LocalTutiStrings.current.common.back,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
@@ -396,15 +413,13 @@ private fun TopRow(
                     .clickable { onBack() }
                     .padding(horizontal = 8.dp, vertical = 6.dp),
             )
-        } else {
-            Spacer(Modifier.width(80.dp))
         }
 
         Spacer(Modifier.weight(1f))
 
         if (page in 1 until TOTAL_PAGES - 1) {
             Text(
-                text = "Гузаштан →",
+                text = LocalTutiStrings.current.common.skipArrow,
                 style = MaterialTheme.typography.labelMedium,
                 color = accent,
                 modifier = Modifier
@@ -483,7 +498,7 @@ private fun WelcomePage() {
     Spacer(Modifier.height(TutiSpace.xs))
 
     Text(
-        text = "Забонҳоро осон омӯзед",
+        text = LocalTutiStrings.current.onboarding.tagline,
         style = MaterialTheme.typography.bodyLarge,
         color = c.jade.onSoft,
         textAlign = TextAlign.Center,
@@ -575,7 +590,7 @@ private fun AuthActions(
                         )
                         Spacer(Modifier.width(TutiSpace.md))
                         Text(
-                            text = "Бо Google ворид шавед",
+                            text = LocalTutiStrings.current.onboarding.googleSignIn,
                             style = MaterialTheme.typography.labelLarge,
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -588,7 +603,7 @@ private fun AuthActions(
         Spacer(Modifier.height(TutiSpace.md))
 
         Text(
-            text = "Бо ворид шудан шумо шартҳои истифода\nва сиёсати махфиятро қабул мекунед",
+            text = LocalTutiStrings.current.onboarding.terms,
             style = MaterialTheme.typography.bodySmall,
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -780,7 +795,7 @@ private fun CompletionPage() {
     Spacer(Modifier.height(TutiSpace.xl))
 
     Text(
-        text = "Ҳама чиз тайёр! 🎉",
+        text = LocalTutiStrings.current.onboarding.readyTitle,
         style = MaterialTheme.typography.displaySmall,
         color = MaterialTheme.colorScheme.onBackground,
         textAlign = TextAlign.Center,
@@ -788,7 +803,7 @@ private fun CompletionPage() {
     )
     Spacer(Modifier.height(TutiSpace.md))
     Text(
-        text = "Tuti курси шуморо тайёр кард.\nБиёед оғоз кунем!",
+        text = LocalTutiStrings.current.onboarding.readySubtitle,
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,

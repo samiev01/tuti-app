@@ -24,6 +24,7 @@ import app.tuti.tj.data.content.Exercise
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 /**
  * Достроить реплику в диалоге.
@@ -88,7 +89,7 @@ fun DialogueCompleteExercise(
         Spacer(Modifier.height(TutiSpace.xl))
 
         Text(
-            text = "Ҷои холиро пур кунед:",
+            text = LocalTutiStrings.current.practice.fillTheBlank,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.fillMaxWidth(),

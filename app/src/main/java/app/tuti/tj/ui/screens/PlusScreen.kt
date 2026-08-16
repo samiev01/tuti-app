@@ -54,6 +54,8 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
 import kotlinx.coroutines.launch
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.PlusStrings
 
 // ════════════════════════════════════════════════════════════════
 //  TUTI PLUS
@@ -67,19 +69,20 @@ import kotlinx.coroutines.launch
 
 private data class Benefit(val emoji: String, val text: String)
 
-private val benefits = listOf(
-    Benefit("📚", "Дарсҳои бемаҳдуд дар як рӯз"),
-    Benefit("🦜", "Суҳбати бемаҳдуд бо Tuti AI"),
-    Benefit("🃏", "Корти калимаҳои бемаҳдуд"),
-    Benefit("🎧", "Машқи шунавоии бемаҳдуд"),
-    Benefit("📞", "Занги овозӣ бо Tuti"),
-    Benefit("⭐", "Ҳамаи модулҳо кушода"),
-    Benefit("🚫", "Бе реклама"),
+private fun benefits(s: PlusStrings) = listOf(
+    Benefit("📚", s.benefitLessons),
+    Benefit("🦜", s.benefitChat),
+    Benefit("🃏", s.benefitFlashcards),
+    Benefit("🎧", s.benefitListening),
+    Benefit("📞", s.benefitCall),
+    Benefit("⭐", s.benefitModules),
+    Benefit("🚫", s.benefitNoAds),
 )
 
 @Composable
 fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.plus
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -148,14 +151,17 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
                     )
                     Spacer(Modifier.height(TutiSpace.md))
                     Text(
-                        text = "Tuti Plus ⭐",
+                        text = s.title,
                         style = MaterialTheme.typography.displaySmall,
                         color = Color.White,
                     )
                     Spacer(Modifier.height(TutiSpace.xs))
                     Text(
-                        text = if (isPlus) "Фаъол · $daysRemaining рӯз боқӣ"
-                        else "Ҳама имконият бе маҳдудият!",
+                        text = if (isPlus) {
+                            s.activeDaysLeft(daysRemaining)
+                        } else {
+                            s.subtitleUnlimited
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.White.copy(alpha = 0.92f),
                         textAlign = TextAlign.Center,
@@ -171,13 +177,13 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
             // ── преимущества ─────────────────────
             Column {
                 Text(
-                    text = "Бартариятҳои Plus",
+                    text = s.benefitsTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
                 TutiCard(modifier = Modifier.fillMaxWidth(), contentPadding = TutiSpace.md) {
-                    benefits.forEach { b ->
+                    benefits(s).forEach { b ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -206,15 +212,15 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
             // ── тарифы ───────────────────────────
             Column {
                 Text(
-                    text = "Нархҳо",
+                    text = s.pricesTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
 
                 PlanCard(
-                    title = "Моҳона",
-                    subtitle = "30 рӯз",
+                    title = s.monthly,
+                    subtitle = s.monthlyPeriod,
                     price = "29",
                     selected = selectedPlan == 0,
                     accentBase = c.jade.base,
@@ -223,10 +229,10 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
                 )
                 Spacer(Modifier.height(TutiSpace.sm))
                 PlanCard(
-                    title = "Солона",
-                    subtitle = "365 рӯз",
+                    title = s.yearly,
+                    subtitle = s.yearlyPeriod,
                     price = "149",
-                    badge = "Сарфа 57%",
+                    badge = s.saveBadge,
                     selected = selectedPlan == 1,
                     accentBase = c.mango.base,
                     accentSoft = c.mango.soft,
@@ -237,17 +243,17 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
             // ── как купить ───────────────────────
             Column {
                 Text(
-                    text = "Чӣ тавр харидан",
+                    text = s.howToBuy,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
                 TutiCard(modifier = Modifier.fillMaxWidth(), contentPadding = TutiSpace.lg) {
                     val steps = listOf(
-                        "Ба @tuti_support дар Telegram нависед",
-                        "Маблағро гузаронед",
-                        "Промокод мегиред",
-                        "Дар поён ворид кунед",
+                        s.stepTelegram,
+                        s.stepPay,
+                        s.stepGetCode,
+                        s.stepEnterCode,
                     )
                     steps.forEachIndexed { i, step ->
                         Row(
@@ -283,7 +289,7 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
             // ── промокод ─────────────────────────
             Column {
                 Text(
-                    text = "Промокод",
+                    text = s.promoTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
@@ -315,7 +321,7 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
                 Spacer(Modifier.height(TutiSpace.md))
 
                 TutiButton(
-                    text = "Фаъол кардан",
+                    text = s.promoActivate,
                     onClick = {
                         if (promoCode.isBlank()) return@TutiButton
                         isLoading = true
@@ -325,22 +331,21 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
                             when (result) {
                                 is PromoCodeManager.RedeemResult.Success -> {
                                     isSuccess = true
-                                    resultMessage =
-                                        "🎉 Табрик! Tuti Plus барои ${result.days} рӯз фаъол шуд!"
+                                    resultMessage = s.promoSuccess(result.days)
                                     TutiSoundManager.playLessonComplete()
                                     onActivated()
                                 }
                                 is PromoCodeManager.RedeemResult.InvalidCode -> {
                                     isSuccess = false
-                                    resultMessage = "Промокод нодуруст аст"
+                                    resultMessage = s.promoInvalid
                                 }
                                 is PromoCodeManager.RedeemResult.AlreadyUsed -> {
                                     isSuccess = false
-                                    resultMessage = "Ин промокод аллакай истифода шудааст"
+                                    resultMessage = s.promoUsed
                                 }
                                 is PromoCodeManager.RedeemResult.Error -> {
                                     isSuccess = false
-                                    resultMessage = "Хатогӣ рӯй дод. Боз кӯшиш кунед"
+                                    resultMessage = s.promoError
                                 }
                             }
                         }
@@ -442,7 +447,7 @@ private fun PlanCard(
                 color = accentBase,
             )
             Text(
-                text = "сомонӣ",
+                text = LocalTutiStrings.current.plus.currency,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

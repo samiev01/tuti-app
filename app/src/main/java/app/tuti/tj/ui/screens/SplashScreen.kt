@@ -55,6 +55,8 @@ import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.TooltipStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ЭКРАН ЗАПУСКА
@@ -78,9 +80,9 @@ import kotlinx.coroutines.launch
 private const val MIN_VISIBLE_MS = 1600L
 
 /** Языки, которым приложение учит сейчас. */
-private val splashLanguages = listOf(
-    "🇷🇺" to "Русӣ",
-    "🇬🇧" to "Англисӣ",
+private fun splashLanguages(s: TooltipStrings) = listOf(
+    "🇷🇺" to s.splashRussian,
+    "🇬🇧" to s.splashEnglish,
 )
 
 @Composable
@@ -90,6 +92,7 @@ fun SplashScreen(
 ) {
     val c = MaterialTheme.tutiColors
     val isDark = LocalDarkTheme.current
+    val strings = LocalTutiStrings.current.tooltips
 
     // Переход происходит по двум условиям сразу: данные готовы и
     // минимальное время показа истекло.
@@ -179,7 +182,7 @@ fun SplashScreen(
 
             // ── подпись ──────────────────────────
             Text(
-                text = "Забонҳоро осон омӯзед",
+                text = strings.splashTagline,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -197,7 +200,7 @@ fun SplashScreen(
                     .alpha(alphas[4].value)
                     .offset(y = rises[4].value.dp),
             ) {
-                splashLanguages.forEach { (flag, label) ->
+                splashLanguages(strings).forEach { (flag, label) ->
                     LanguageBadge(flag = flag, label = label)
                 }
             }

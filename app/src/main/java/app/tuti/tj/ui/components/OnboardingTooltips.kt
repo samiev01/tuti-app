@@ -50,6 +50,8 @@ import app.tuti.tj.ui.components.kit.TutiGhostButton
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.TooltipStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ОБУЧАЮЩИЕ ПОДСКАЗКИ ГЛАВНОГО ЭКРАНА
@@ -61,39 +63,40 @@ import app.tuti.tj.ui.theme.tutiColors
 // ════════════════════════════════════════════════════════════════
 
 data class TooltipStep(
-    val text: String,
+    /** Реплика выбирается из словаря — она зависит от языка интерфейса. */
+    val text: (TooltipStrings) -> String,
     val targetKey: String,
     val mascotSide: String, // "left", "right", "center"
 )
 
 val onboardingSteps = listOf(
     TooltipStep(
-        text = "Ин очкоҳои шумо ва пешрафт то ҳадафи навбатӣ! 💎",
+        text = { it.xp },
         targetKey = "header_row",
         mascotSide = "right",
     ),
     TooltipStep(
-        text = "Серияи ҳафтаина! Ҳар рӯз хонед ва серияро нигоҳ доред! 🔥",
+        text = { it.streak },
         targetKey = "streak_card",
         mascotSide = "left",
     ),
     TooltipStep(
-        text = "Курси асосии шумо! Барои оғоз ё давом пахш кунед! 👆",
+        text = { it.course },
         targetKey = "course_card",
         mascotSide = "right",
     ),
     TooltipStep(
-        text = "Мавзӯъҳои ройгон! Бе пардохт калимаҳо омӯзед! 🎉",
+        text = { it.topics },
         targetKey = "free_topics",
         mascotSide = "left",
     ),
     TooltipStep(
-        text = "Дар бахши Машқ бо Tuti гап занед ва корти калимаҳо омӯзед! 🦜",
+        text = { it.practice },
         targetKey = "bottom_nav_practice",
         mascotSide = "right",
     ),
     TooltipStep(
-        text = "Офарин! Шумо тайёред! Биёед забон омӯзем! 🚀",
+        text = { it.finish },
         targetKey = "done",
         mascotSide = "center",
     ),
@@ -313,7 +316,7 @@ private fun TooltipBubble(
                     .padding(TutiSpace.lg),
             ) {
                 Text(
-                    text = step.text,
+                    text = step.text(LocalTutiStrings.current.tooltips),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -353,9 +356,12 @@ private fun TooltipBubble(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TutiGhostButton(text = "Гузаштан", onClick = onSkip)
+                        TutiGhostButton(
+                            text = LocalTutiStrings.current.tooltips.skip,
+                            onClick = onSkip,
+                        )
                         TutiButton(
-                            text = "Давом",
+                            text = LocalTutiStrings.current.tooltips.next,
                             onClick = onNext,
                             size = TutiButtonSize.Small,
                             trailingEmoji = "→",
@@ -364,7 +370,7 @@ private fun TooltipBubble(
                     }
                 } else {
                     TutiButton(
-                        text = "Оғоз кардан!",
+                        text = LocalTutiStrings.current.tooltips.start,
                         onClick = onNext,
                         leadingEmoji = "🚀",
                     )

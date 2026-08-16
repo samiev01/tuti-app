@@ -29,6 +29,9 @@ import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.remote.FirestoreManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import app.tuti.tj.ui.i18n.LanguageManager
+import app.tuti.tj.ui.i18n.ProvideTutiStrings
+import app.tuti.tj.ui.screens.LanguagePickScreen
 import app.tuti.tj.ui.theme.ThemeManager
 import app.tuti.tj.ui.theme.ThemeMode
 import app.tuti.tj.ui.theme.TutiTheme
@@ -74,29 +77,44 @@ class MainActivity : ComponentActivity() {
             }
 
             TutiTheme(darkTheme = darkTheme) {
-                val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val showBottomBar = navBackStackEntry?.destination?.route in bottomBarRoutes
+                // Строки раздаются так же, как тема: сменил язык в
+                // профиле — всё дерево перерисовалось, Activity при
+                // этом не пересоздаётся и навигация не сбрасывается.
+                ProvideTutiStrings {
+                    // Пока язык не выбран, приложения как бы нет: ни
+                    // навигации, ни нижней панели — только вопрос.
+                    // Иначе первый экран пришлось бы рисовать на
+                    // языке, который за человека никто не выбирал.
+                    val languageChosen by LanguageManager.isChosen.collectAsState()
+                    if (!languageChosen) {
+                        LanguagePickScreen()
+                        return@ProvideTutiStrings
+                    }
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    // Scaffold ничего не отступает сам: системные вставки
-                    // обрабатывает каждый экран (statusBarsPadding там, где
-                    // нужен отступ, и без него там, где шапка-градиент
-                    // должна уходить под статус-бар). Раньше здесь стояли
-                    // systemBars, и отступ сверху удваивался — контент
-                    // висел заметно ниже, чем задумано.
-                    // innerPadding при этом всё равно учитывает высоту
-                    // нижней панели, а imePadding в экранах получает
-                    // настоящий сдвиг клавиатуры.
-                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                    bottomBar = { if (showBottomBar) BottomNavBar(navController) },
-                ) { innerPadding ->
-                    NavGraph(
-                        navController = navController,
-                        resolvedRoute = startDestination,
-                        modifier = Modifier.padding(innerPadding),
-                    )
+                    val navController = rememberNavController()
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val showBottomBar = navBackStackEntry?.destination?.route in bottomBarRoutes
+
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        // Scaffold ничего не отступает сам: системные вставки
+                        // обрабатывает каждый экран (statusBarsPadding там, где
+                        // нужен отступ, и без него там, где шапка-градиент
+                        // должна уходить под статус-бар). Раньше здесь стояли
+                        // systemBars, и отступ сверху удваивался — контент
+                        // висел заметно ниже, чем задумано.
+                        // innerPadding при этом всё равно учитывает высоту
+                        // нижней панели, а imePadding в экранах получает
+                        // настоящий сдвиг клавиатуры.
+                        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                        bottomBar = { if (showBottomBar) BottomNavBar(navController) },
+                    ) { innerPadding ->
+                        NavGraph(
+                            navController = navController,
+                            resolvedRoute = startDestination,
+                            modifier = Modifier.padding(innerPadding),
+                        )
+                    }
                 }
             }
         }

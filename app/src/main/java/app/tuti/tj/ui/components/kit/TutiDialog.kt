@@ -40,6 +40,7 @@ import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  МОДАЛЬНЫЕ ОКНА
@@ -253,7 +254,7 @@ fun TutiFeedbackBar(
     onContinue: () -> Unit,
     modifier: Modifier = Modifier,
     detail: String? = null,
-    buttonText: String = "Давом →",
+    buttonText: String = "${LocalTutiStrings.current.common.continueShort} →",
 ) {
     val c = MaterialTheme.tutiColors
     Column(

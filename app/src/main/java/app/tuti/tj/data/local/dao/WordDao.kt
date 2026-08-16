@@ -41,6 +41,9 @@ interface WordDao {
     @Query("SELECT COUNT(*) FROM learned_words WHERE correctCount >= 1")
     fun getTotalLearnedWords(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM learned_words WHERE correctCount >= 1 AND language = :language")
+    fun getLearnedWordsForLanguage(language: String): Flow<Int>
+
     @Query("SELECT * FROM learned_words WHERE word = :word AND language = :language LIMIT 1")
     suspend fun getWordByText(word: String, language: String): LearnedWordEntity?
 

@@ -49,6 +49,8 @@ import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.TutiWordStyle
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.localizedName
 
 // ════════════════════════════════════════════════════════════════
 //  ИЗУЧЕНИЕ СЛОВ ТЕМЫ
@@ -65,6 +67,8 @@ fun WordLearnScreen(
     onBack: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.lessons
     val words = remember { ContentProvider.getWordsForTopic(topicId) }
     val topicInfo = remember { ContentProvider.getTopicInfo(topicId) }
     var currentIndex by remember { mutableIntStateOf(0) }
@@ -91,18 +95,19 @@ fun WordLearnScreen(
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = topicInfo?.let { "${it.emoji} ${it.name}" } ?: "Калимаҳо",
+                    text = topicInfo?.let { "${it.emoji} ${it.localizedName(strings)}" }
+                        ?: s.wordsTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "${currentIndex + 1} аз ${words.size}",
+                    text = strings.common.ofCount(currentIndex + 1, words.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             TutiPill(
-                text = "Санҷиш →",
+                text = s.toQuiz,
                 background = c.jade.soft,
                 contentColor = c.jade.onSoft,
                 onClick = onStartQuiz,
@@ -139,14 +144,14 @@ fun WordLearnScreen(
         ) {
             if (currentIndex > 0) {
                 TutiSecondaryButton(
-                    text = "← Пеш",
+                    text = strings.common.previousArrow,
                     onClick = { currentIndex--; isFlipped = false },
                     modifier = Modifier.weight(1f),
                     fillWidth = false,
                 )
             }
             TutiButton(
-                text = if (isLast) "Санҷишро оғоз кунед" else "Давом",
+                text = if (isLast) s.startQuiz else strings.common.continueShort,
                 onClick = {
                     if (isLast) onStartQuiz() else {
                         currentIndex++
@@ -253,7 +258,7 @@ private fun WordCard(word: WordItem, isFlipped: Boolean, onFlip: () -> Unit) {
         if (!isFlipped) {
             Spacer(Modifier.height(TutiSpace.xxl))
             Text(
-                text = "👆 Барои дидани тарҷума зер кунед",
+                text = LocalTutiStrings.current.lessons.tapForTranslation,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

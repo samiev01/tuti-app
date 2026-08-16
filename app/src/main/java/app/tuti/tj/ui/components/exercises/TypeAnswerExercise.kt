@@ -30,6 +30,7 @@ import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 /**
  * Ввод ответа с клавиатуры.
@@ -68,7 +69,7 @@ fun TypeAnswerExercise(
             onValueChange = { if (answeredCorrectly == null) onTextChange(it) },
             placeholder = {
                 Text(
-                    text = "Ҷавобро нависед…",
+                    text = LocalTutiStrings.current.practice.writeAnswerPlaceholder,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -107,7 +108,7 @@ fun TypeAnswerExercise(
                 Text("💡", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.width(TutiSpace.sm))
                 Text(
-                    text = "Ҷавоби дуруст: ${exercise.correctAnswer}",
+                    text = LocalTutiStrings.current.common.correctAnswer(exercise.correctAnswer),
                     style = MaterialTheme.typography.titleMedium,
                     color = c.correctText,
                 )

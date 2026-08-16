@@ -40,6 +40,7 @@ import app.tuti.tj.ui.components.kit.TutiButtonTone
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 private const val TAG = "ExerciseHost"
 
@@ -130,12 +131,16 @@ fun ExerciseHost(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Ин машқ дастрас нест",
+                text = LocalTutiStrings.current.practice.exerciseUnavailable,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(TutiSpace.md))
-            TutiButton(text = "Давом", onClick = { onAnswer(true) }, trailingEmoji = "→")
+            TutiButton(
+                text = LocalTutiStrings.current.common.continueShort,
+                onClick = { onAnswer(true) },
+                trailingEmoji = "→",
+            )
         }
         return
     }
@@ -213,7 +218,7 @@ fun ExerciseHost(
         if (exercise.type == ExerciseType.MATCH_PAIRS) {
             if (matchPairsComplete) {
                 TutiButton(
-                    text = "Давом додан",
+                    text = LocalTutiStrings.current.common.continueLong,
                     onClick = {
                         TutiSoundManager.playCorrectAnswer()
                         runCatching { onAnswer(true) }
@@ -226,7 +231,11 @@ fun ExerciseHost(
             }
         } else {
             TutiButton(
-                text = if (answeredCorrectly != null) "Давом додан" else "Санҷидан",
+                text = if (answeredCorrectly != null) {
+                    LocalTutiStrings.current.common.continueLong
+                } else {
+                    LocalTutiStrings.current.common.check
+                },
                 onClick = {
                     try {
                         if (answeredCorrectly != null) {
@@ -299,7 +308,9 @@ private fun FeedbackCard(isCorrect: Boolean, explanation: String) {
         }
         Column {
             Text(
-                text = if (isCorrect) "Офарин! Дуруст!" else "Нодуруст…",
+                text = with(LocalTutiStrings.current.common) {
+                    if (isCorrect) correctTitle else wrongTitle
+                },
                 style = MaterialTheme.typography.titleMedium,
                 color = if (isCorrect) c.correctText else c.wrongText,
             )

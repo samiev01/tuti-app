@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import app.tuti.tj.data.content.Exercise
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 /**
  * Выбор одного варианта — базовое задание урока.
@@ -26,7 +27,7 @@ fun MultipleChoiceExercise(
     if (options.isNullOrEmpty()) {
         Log.e("MultipleChoice", "options is null or empty for exercise ${exercise.id}")
         Text(
-            text = "Хатогӣ: варианти ҷавоб нест",
+            text = LocalTutiStrings.current.practice.noOptionsError,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

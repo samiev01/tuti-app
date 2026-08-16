@@ -19,6 +19,7 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.NoCredentialException
 import app.tuti.tj.R
 import app.tuti.tj.data.auth.GoogleAuthManager
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.GoogleAuthProvider
@@ -52,6 +53,9 @@ fun rememberGoogleSignIn(onSignedIn: () -> Unit): GoogleSignIn {
     val scope = rememberCoroutineScope()
     var isRunning by remember { mutableStateOf(false) }
     val currentOnSignedIn by rememberUpdatedState(onSignedIn)
+    // Строки берутся один раз при композиции: внутри корутины
+    // читать CompositionLocal уже нельзя.
+    val auth = LocalTutiStrings.current.auth
 
     return GoogleSignIn(isRunning = isRunning) {
         if (!isRunning) {
@@ -85,14 +89,14 @@ fun rememberGoogleSignIn(onSignedIn: () -> Unit): GoogleSignIn {
                         } else {
                             Toast.makeText(
                                 context,
-                                "Хатогӣ дар ворид шудан",
+                                auth.signInError,
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }
                     } else {
                         Toast.makeText(
                             context,
-                            "Навъи аккаунт дастгирӣ намешавад",
+                            auth.unsupportedAccount,
                             Toast.LENGTH_SHORT,
                         ).show()
                     }
@@ -101,13 +105,13 @@ fun rememberGoogleSignIn(onSignedIn: () -> Unit): GoogleSignIn {
                 } catch (_: NoCredentialException) {
                     Toast.makeText(
                         context,
-                        "Аккаунти Google ёфт нашуд. Аввал аккаунт илова кунед.",
+                        auth.noGoogleAccount,
                         Toast.LENGTH_LONG,
                     ).show()
                 } catch (e: Exception) {
                     Toast.makeText(
                         context,
-                        "Хатогӣ: ${e.localizedMessage ?: "Дубора кӯшиш кунед"}",
+                        auth.errorWithMessage(e.localizedMessage ?: auth.genericRetry),
                         Toast.LENGTH_SHORT,
                     ).show()
                 } finally {

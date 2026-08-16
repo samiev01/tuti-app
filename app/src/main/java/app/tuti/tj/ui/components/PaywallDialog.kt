@@ -30,6 +30,7 @@ import app.tuti.tj.ui.mascot.TutiState
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ЛИМИТ ИСЧЕРПАН
@@ -48,6 +49,7 @@ fun PaywallDialog(
     onDismiss: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.plus
 
     LaunchedEffect(Unit) {
         runCatching { TutiSoundManager.playLoseHeart() }
@@ -55,9 +57,8 @@ fun PaywallDialog(
 
     TutiDialog(
         onDismiss = onDismiss,
-        title = "Имрӯз лимит тамом шуд",
-        message = "Шумо имрӯз $lessonsUsed аз $lessonsMax дарс хондед. " +
-            "Пагоҳ давом диҳед ё Plus гиред!",
+        title = s.paywallTitle,
+        message = s.paywallMessage(lessonsUsed, lessonsMax),
         mascotState = TutiState.SAD,
         accent = c.mango.base,
     ) {
@@ -72,16 +73,16 @@ fun PaywallDialog(
                 .padding(TutiSpace.md),
         ) {
             Text(
-                text = "Бо Plus шумо мегиред:",
+                text = s.paywallBenefitsTitle,
                 style = MaterialTheme.typography.titleSmall,
                 color = c.mango.onSoft,
             )
             Spacer(Modifier.height(TutiSpace.sm))
             listOf(
-                "📚" to "Дарсҳои бемаҳдуд",
-                "🦜" to "Чати бемаҳдуд бо Tuti",
-                "🎧" to "Машқи шунавоӣ",
-                "📞" to "Занги овозӣ",
+                "📚" to s.paywallLessons,
+                "🦜" to s.paywallChat,
+                "🎧" to s.paywallListening,
+                "📞" to s.paywallCall,
             ).forEach { (emoji, text) ->
                 Row(
                     modifier = Modifier.padding(vertical = 3.dp),
@@ -106,13 +107,13 @@ fun PaywallDialog(
             horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
         ) {
             PriceTile(
-                label = "Моҳона",
+                label = s.monthly,
                 price = "29",
                 highlighted = false,
                 modifier = Modifier.weight(1f),
             )
             PriceTile(
-                label = "Солона",
+                label = s.yearly,
                 price = "149",
                 badge = "-57%",
                 highlighted = true,
@@ -121,9 +122,9 @@ fun PaywallDialog(
         }
 
         TutiDialogActions(
-            primaryText = "Tuti Plus гиред!",
+            primaryText = s.paywallPrimary,
             onPrimary = onGetPlus,
-            secondaryText = "Пагоҳ давом медиҳам →",
+            secondaryText = s.paywallSecondary,
             onSecondary = onDismiss,
             tone = TutiButtonTone.Mango,
             gradient = c.plusGradient,
@@ -169,7 +170,7 @@ private fun PriceTile(
                 color = if (highlighted) c.mango.base else MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "сомонӣ",
+                text = LocalTutiStrings.current.plus.currency,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 9.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

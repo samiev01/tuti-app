@@ -11,6 +11,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Администратор Tuti Admin Panel (admin.tutitj.com). Права выдаются
+    // custom claim'ом через scripts/set-admin.mjs в tuti-website и из
+    // клиента получены быть не могут.
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
@@ -23,17 +30,19 @@ service cloud.firestore {
 
     // TUTI-PROMOCODES/{code} — промокоды Tuti Plus. Document ID и есть код.
     // Читать может любой авторизованный (иначе активация не увидит документ),
-    // а из записи разрешено ровно одно: погасить неиспользованный код на себя.
-    // Менять active, months или чужой usedBy клиент не может.
+    // а из записи обычному пользователю разрешено ровно одно: погасить
+    // неиспользованный код на себя. Менять active, months или чужой usedBy
+    // клиент не может — это только для администратора.
     match /TUTI-PROMOCODES/{code} {
       allow read: if request.auth != null;
-      allow update: if request.auth != null
-                    && resource.data.used == false
-                    && request.resource.data.used == true
-                    && request.resource.data.usedBy == request.auth.uid
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['used', 'usedBy', 'usedAt']);
-      allow create, delete: if false;
+      allow update: if isAdmin()
+                    || (request.auth != null
+                        && resource.data.used == false
+                        && request.resource.data.used == true
+                        && request.resource.data.usedBy == request.auth.uid
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['used', 'usedBy', 'usedAt']));
+      allow create, delete: if isAdmin();
     }
 
     // Всё остальное закрыто.

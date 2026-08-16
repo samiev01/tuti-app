@@ -64,6 +64,8 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.delay
+import app.tuti.tj.ui.i18n.DEFAULT_CITY
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  РЕЙТИНГ
@@ -110,7 +112,10 @@ fun LeaderboardScreen(
     val c = MaterialTheme.tutiColors
     val prefs = remember { context.getSharedPreferences("tuti_prefs", Context.MODE_PRIVATE) }
     val fbUser = remember { FirebaseAuth.getInstance().currentUser }
-    val userCity = remember { prefs.getString("user_city", "Душанбе") ?: "Душанбе" }
+    val strings = LocalTutiStrings.current
+    // Значение из prefs — таджикское: по нему сравниваются города
+    // в рейтинге. Переводим только то, что уходит в разметку.
+    val userCity = remember { prefs.getString("user_city", DEFAULT_CITY) ?: DEFAULT_CITY }
 
     val localUser by repository.getUserFlow().collectAsState(initial = null)
     val statsLanguage = localUser?.selectedLanguage ?: "russian"
@@ -197,11 +202,12 @@ fun LeaderboardScreen(
             displayedUsers.isEmpty() -> {
                 item(key = "empty") {
                     TutiEmptyState(
-                        title = "Ҳоло корбарон нестанд",
-                        message = if (filterMyCity)
-                            "Дар шаҳри шумо ҳоло касе нест. Аввалин шавед!"
-                        else
-                            "Аввалин нафари рейтинг шавед!",
+                        title = strings.leaderboard.emptyTitle,
+                        message = if (filterMyCity) {
+                            strings.leaderboard.emptyMessageCity
+                        } else {
+                            strings.leaderboard.emptyMessageGlobal
+                        },
                         mascotState = TutiState.THINKING,
                     )
                 }
@@ -255,6 +261,7 @@ private fun Header(
     words: Int,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
 
     Box(
         modifier = Modifier
@@ -284,7 +291,7 @@ private fun Header(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Рейтинг 🏆",
+                    text = strings.leaderboard.title,
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White,
                 )
@@ -317,7 +324,8 @@ private fun ProfileCard(
     words: Int,
 ) {
     val c = MaterialTheme.tutiColors
-    val name = fbUser.displayName?.takeIf { it.isNotBlank() } ?: "Корбар"
+    val strings = LocalTutiStrings.current
+    val name = fbUser.displayName?.takeIf { it.isNotBlank() } ?: strings.common.user
     val photoUrl = fbUser.photoUrl?.toString()
     val shape = RoundedCornerShape(TutiRadius.lg)
 
@@ -348,7 +356,7 @@ private fun ProfileCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "${cityEmoji(userCity)} $userCity" +
+                    text = "${cityEmoji(userCity)} ${strings.cities.name(userCity)}" +
                         if (myGlobalRank > 0) " · #$myGlobalRank" else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.75f),
@@ -364,7 +372,7 @@ private fun ProfileCard(
                     color = c.gold,
                 )
                 Text(
-                    text = "очки",
+                    text = strings.common.points,
                     style = MaterialTheme.typography.labelSmall,
                     color = c.gold.copy(alpha = 0.85f),
                 )
@@ -384,13 +392,13 @@ private fun ProfileCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            StatItem("🔥", "Серия", "$streak")
+            StatItem("🔥", strings.common.streakLabel, "$streak")
             StatSeparator()
-            StatItem("📚", "Дарсҳо", "$lessons")
+            StatItem("📚", strings.common.lessonsLabel, "$lessons")
             StatSeparator()
-            StatItem("⭐", "Калимаҳо", "$words")
+            StatItem("⭐", strings.common.wordsLabel, "$words")
             StatSeparator()
-            StatItem("🏅", "Ҷойгоҳ", if (myGlobalRank > 0) "#$myGlobalRank" else "—")
+            StatItem("🏅", strings.common.rankLabel, if (myGlobalRank > 0) "#$myGlobalRank" else "—")
         }
     }
 }
@@ -439,9 +447,10 @@ private fun FilterButtons(
             .padding(horizontal = TutiSpace.screen, vertical = TutiSpace.md),
         horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
     ) {
-        FilterTab("🌍 Ҳама", selected = !filterMyCity, onClick = onAll, modifier = Modifier.weight(1f))
+        val s = LocalTutiStrings.current.leaderboard
+        FilterTab(s.filterAll, selected = !filterMyCity, onClick = onAll, modifier = Modifier.weight(1f))
         FilterTab(
-            "🏛️ Шаҳри ман",
+            s.filterMyCity,
             selected = filterMyCity,
             onClick = onMyCity,
             modifier = Modifier.weight(1f),
@@ -577,7 +586,7 @@ private fun PodiumItem(
         }
         if (user.city.isNotBlank()) {
             Text(
-                text = "${cityEmoji(user.city)} ${user.city}",
+                text = "${cityEmoji(user.city)} ${LocalTutiStrings.current.cities.name(user.city)}",
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 9.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -618,7 +627,7 @@ private fun PodiumItem(
                     color = Color.White,
                 )
                 Text(
-                    text = "очки",
+                    text = LocalTutiStrings.current.common.points,
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 9.sp,
                     color = Color.White.copy(alpha = 0.8f),
@@ -696,7 +705,7 @@ private fun UserRow(
                         if (isMe) {
                             Spacer(Modifier.width(TutiSpace.xs))
                             TutiPill(
-                                text = "Шумо",
+                                text = LocalTutiStrings.current.leaderboard.you,
                                 background = c.jade.base,
                                 contentColor = Color.White,
                             )
@@ -704,7 +713,7 @@ private fun UserRow(
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "${cityEmoji(user.city)} ${user.city}",
+                            text = "${cityEmoji(user.city)} ${LocalTutiStrings.current.cities.name(user.city)}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -727,7 +736,7 @@ private fun UserRow(
                         color = if (user.isPlusUser) c.gold else c.jade.base,
                     )
                     Text(
-                        text = "очки",
+                        text = LocalTutiStrings.current.common.points,
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = 9.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -760,7 +769,7 @@ private fun MotivationCard(myRank: Int, above: LeaderUserScore?, myXp: Int) {
         ) {
             when {
                 myRank == 1 -> Text(
-                    text = "🏆 Шумо рақами 1 дар рейтинг ҳастед!",
+                    text = LocalTutiStrings.current.leaderboard.topOne,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -768,7 +777,7 @@ private fun MotivationCard(myRank: Int, above: LeaderUserScore?, myXp: Int) {
                 above != null -> {
                     val diff = (above.xp - myXp).coerceAtLeast(1)
                     Text(
-                        text = "⚡ То ҷойгоҳи ${myRank - 1} ҳамагӣ $diff очки монд!",
+                        text = LocalTutiStrings.current.leaderboard.toNextRank(myRank - 1, diff),
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         textAlign = TextAlign.Center,
@@ -777,7 +786,7 @@ private fun MotivationCard(myRank: Int, above: LeaderUserScore?, myXp: Int) {
             }
             Spacer(Modifier.height(TutiSpace.xs))
             Text(
-                text = "Имрӯз як дарс хонед ва боло равед! 💪",
+                text = LocalTutiStrings.current.leaderboard.motivation,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
@@ -857,7 +866,7 @@ private fun OfflineBanner() {
         Text("📵", fontSize = 14.sp)
         Spacer(Modifier.width(TutiSpace.sm))
         Text(
-            text = "Офлайн — охирин маълумот нишон дода мешавад",
+            text = LocalTutiStrings.current.leaderboard.offline,
             style = MaterialTheme.typography.bodySmall,
             color = c.mango.onSoft,
         )
@@ -876,8 +885,8 @@ private fun NotSignedIn() {
         verticalArrangement = Arrangement.Center,
     ) {
         TutiEmptyState(
-            title = "Ворид шавед барои рейтинг",
-            message = "Барои дидани рейтинги глобалӣ ва мусобиқа бо дигарон ворид шавед.",
+            title = LocalTutiStrings.current.leaderboard.signInTitle,
+            message = LocalTutiStrings.current.leaderboard.signInMessage,
             mascotState = TutiState.THINKING,
         )
     }

@@ -70,6 +70,9 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.TutiStrings
+import app.tuti.tj.ui.i18n.localizedName
 
 // ════════════════════════════════════════════════════════════════
 //  ФЛЕШ-КАРТЫ
@@ -80,9 +83,9 @@ import java.util.Locale
 //  системы, а не в произвольные зелёный и красный.
 // ════════════════════════════════════════════════════════════════
 
-private fun topicLabel(topicId: String): String {
+private fun topicLabel(topicId: String, strings: TutiStrings): String {
     val info = ContentProvider.getTopicInfo(topicId)
-    return if (info != null) "${info.emoji} ${info.name}" else topicId
+    return if (info != null) "${info.emoji} ${info.localizedName(strings)}" else topicId
 }
 
 @Composable
@@ -111,7 +114,7 @@ fun FlashcardsScreen(
 
     if (!loaded) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            TutiLoadingState(message = "Кортҳоро тайёр мекунем…")
+            TutiLoadingState(message = LocalTutiStrings.current.practice.preparingCards)
         }
         return
     }
@@ -151,6 +154,8 @@ fun FlashcardsScreen(
 
 @Composable
 private fun EmptyDeckScreen(onBack: () -> Unit, onGoToLessons: () -> Unit) {
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -161,18 +166,18 @@ private fun EmptyDeckScreen(onBack: () -> Unit, onGoToLessons: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TutiEmptyState(
-            title = "Аввал дарсро гузаред!",
-            message = "Пас аз омӯхтани калимаҳо онҳоро дар ин ҷо такрор карда метавонед.",
+            title = s.learnFirstTitle,
+            message = s.learnFirstMessage,
             mascotState = TutiState.THINKING,
         )
         Spacer(Modifier.height(TutiSpace.lg))
         TutiButton(
-            text = "Ба дарсҳо рафтан",
+            text = s.toLessons,
             onClick = onGoToLessons,
             leadingEmoji = "📚",
         )
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "← Бозгашт", onClick = onBack)
+        TutiSecondaryButton(text = strings.common.back, onClick = onBack)
     }
 }
 
@@ -189,6 +194,8 @@ private fun FlashcardReview(
 ) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     val workingDeck = remember { initialDeck.toMutableList() }
     var currentIndex by remember { mutableIntStateOf(0) }
     var isFlipped by remember { mutableStateOf(false) }
@@ -301,7 +308,7 @@ private fun FlashcardReview(
     ) {
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_FLASHCARD,
-            text = "Кортро пахш кунед барои дидани тарҷума! «Медонам» ё «Намедонам» интихоб кунед 🃏",
+            text = s.flashcardsHint,
         )
 
         Row(
@@ -312,12 +319,12 @@ private fun FlashcardReview(
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = "Корти калимаҳо",
+                    text = s.flashcardsTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "${currentIndex + 1} аз $totalInDeck",
+                    text = strings.common.ofCount(currentIndex + 1, totalInDeck),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -362,7 +369,7 @@ private fun FlashcardReview(
                 horizontalArrangement = Arrangement.spacedBy(TutiSpace.md),
             ) {
                 TutiButton(
-                    text = "Намедонам",
+                    text = s.dontKnow,
                     onClick = { advanceCard(false) },
                     tone = TutiButtonTone.Coral,
                     leadingEmoji = "✕",
@@ -370,7 +377,7 @@ private fun FlashcardReview(
                     playSound = false,
                 )
                 TutiButton(
-                    text = "Медонам",
+                    text = s.know,
                     onClick = { advanceCard(true) },
                     tone = TutiButtonTone.Leaf,
                     leadingEmoji = "✓",
@@ -389,7 +396,7 @@ private fun FlashcardReview(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "👆 Барои дидани тарҷума зер кунед",
+                    text = s.tapForTranslation,
                     style = MaterialTheme.typography.labelLarge,
                     color = c.jade.onSoft,
                 )
@@ -446,7 +453,7 @@ private fun CardFront(word: LearnedWordEntity) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            TutiPill(text = topicLabel(word.topicId))
+            TutiPill(text = topicLabel(word.topicId, LocalTutiStrings.current))
         }
 
         Spacer(Modifier.height(TutiSpace.xl))
@@ -476,7 +483,7 @@ private fun CardFront(word: LearnedWordEntity) {
         Spacer(Modifier.height(TutiSpace.xxxl))
 
         Text(
-            text = "👆 Барои тарҷума зер кунед",
+            text = LocalTutiStrings.current.practice.tapForTranslation,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -546,6 +553,7 @@ private fun CompletionScreen(
     onBack: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
     val unknownCount = totalReviewed - knownCount
     val percent = if (totalReviewed > 0) (knownCount * 100 / totalReviewed) else 0
 
@@ -569,9 +577,9 @@ private fun CompletionScreen(
 
         Text(
             text = when {
-                percent >= 80 -> "Аъло! 🎉"
-                percent >= 60 -> "Хуб! 👍"
-                else -> "Кӯшиш кунед! 💪"
+                percent >= 80 -> strings.common.resultExcellent
+                percent >= 60 -> strings.common.resultGood
+                else -> strings.common.resultTryHarder
             },
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
@@ -596,7 +604,7 @@ private fun CompletionScreen(
             StatCard(
                 emoji = "✅",
                 value = "$knownCount",
-                label = "калима донистед",
+                label = strings.practice.knownWords,
                 bg = c.correctBg,
                 fg = c.correctText,
                 modifier = Modifier.weight(1f),
@@ -604,7 +612,7 @@ private fun CompletionScreen(
             StatCard(
                 emoji = "🔁",
                 value = "$unknownCount",
-                label = "такрор лозим",
+                label = strings.practice.needRepeat,
                 bg = c.wrongBg,
                 fg = c.wrongText,
                 modifier = Modifier.weight(1f),
@@ -613,9 +621,9 @@ private fun CompletionScreen(
 
         Spacer(Modifier.height(TutiSpace.xxl))
 
-        TutiButton(text = "Ба асосӣ", onClick = onBack, leadingEmoji = "🏠")
+        TutiButton(text = strings.common.toHome, onClick = onBack, leadingEmoji = "🏠")
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "Аз нав", onClick = onRestart, leadingEmoji = "🔄")
+        TutiSecondaryButton(text = strings.common.restart, onClick = onRestart, leadingEmoji = "🔄")
     }
 }
 

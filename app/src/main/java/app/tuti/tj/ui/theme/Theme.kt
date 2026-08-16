@@ -51,6 +51,9 @@ data class TutiExtendedColors(
     /** Заливка любого прогресс-бара по умолчанию */
     val progressGradient: List<Color>,
     val streakGradient: List<Color>,
+    /** Спокойная серая подложка серии на главном: блок фоновый, не акцентный */
+    val streakCalmBg: Color,
+    val streakCalmBorder: Color,
     val courseCardGradient: List<Color>,
     val plusGradient: List<Color>,
     val heroGradient: List<Color>,
@@ -101,6 +104,8 @@ private fun lightColors() = TutiExtendedColors(
 
     progressGradient = listOf(Jade, JadeGlow),
     streakGradient = listOf(Jade, Color(0xFF00B4A8), Sky),
+    streakCalmBg = Color(0xFFEDF1F5),
+    streakCalmBorder = Color(0xFFDCE4EC),
     courseCardGradient = listOf(JadeDeep, Jade, Color(0xFF4BD9A8)),
     plusGradient = listOf(Color(0xFFFFC24D), Mango, Color(0xFFFF7A29)),
     heroGradient = listOf(Color(0xFFEDFBF6), Color(0xFFDCF4FF)),
@@ -144,6 +149,8 @@ private fun darkColors() = TutiExtendedColors(
 
     progressGradient = listOf(Jade, JadeGlow),
     streakGradient = listOf(Color(0xFF00614C), Color(0xFF07526B)),
+    streakCalmBg = Color(0xFF18232F),
+    streakCalmBorder = Color(0xFF26333F),
     courseCardGradient = listOf(Color(0xFF06402F), Color(0xFF0A6349), Color(0xFF0E8A66)),
     plusGradient = listOf(Color(0xFF8A5A0A), Color(0xFFB87200), Color(0xFFD98A18)),
     heroGradient = listOf(Color(0xFF0E1C29), Color(0xFF0B141F)),

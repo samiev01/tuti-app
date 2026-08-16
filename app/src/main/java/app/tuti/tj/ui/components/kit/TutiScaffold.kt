@@ -39,6 +39,7 @@ import app.tuti.tj.ui.mascot.TutiState
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  КАРКАС ЭКРАНА: шапки и служебные состояния
@@ -218,7 +219,7 @@ fun TutiErrorState(
     title: String,
     message: String,
     modifier: Modifier = Modifier,
-    retryText: String = "Аз нав кӯшиш кунед",
+    retryText: String = LocalTutiStrings.current.common.retry,
     onRetry: (() -> Unit)? = null,
 ) {
     Column(
@@ -261,7 +262,7 @@ fun TutiErrorState(
 @Composable
 fun TutiLoadingState(
     modifier: Modifier = Modifier,
-    message: String = "Лаҳзае сабр кунед…",
+    message: String = LocalTutiStrings.current.common.loading,
 ) {
     val inf = rememberInfiniteTransition(label = "loadingPulse")
     val pulse by inf.animateFloat(

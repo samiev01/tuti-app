@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,11 +75,14 @@ import app.tuti.tj.ui.components.kit.TutiButtonSize
 import app.tuti.tj.ui.components.kit.TutiCard
 import app.tuti.tj.ui.components.kit.TutiDialog
 import app.tuti.tj.ui.components.kit.TutiDialogActions
-import app.tuti.tj.ui.components.kit.TutiGradientCard
 import app.tuti.tj.ui.components.kit.TutiIconTile
 import app.tuti.tj.ui.components.kit.TutiPill
 import app.tuti.tj.ui.components.kit.TutiProgressBar
 import app.tuti.tj.ui.components.kit.TutiSectionHeader
+import app.tuti.tj.ui.i18n.HomeStrings
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.localizedName
+import app.tuti.tj.ui.i18n.localizedSubtitle
 import app.tuti.tj.ui.components.kit.dashedOutline
 import app.tuti.tj.ui.components.onboardingSteps
 import app.tuti.tj.ui.mascot.TutiState
@@ -101,26 +106,27 @@ import java.util.Locale
 //  никаких локальных цветов.
 // ════════════════════════════════════════════════════════════════
 
-private val dayLabels = listOf("Дш", "Сш", "Чш", "Пш", "Ҷм", "Шн", "Яш")
-
 /** Как часто Тӯтӣ меняет реплику в шапке. */
 private const val PHRASE_INTERVAL_MS = 12_000L
 
 private fun formatXp(xp: Int): String =
     if (xp >= 1000) "${xp / 1000},${(xp % 1000).toString().padStart(3, '0')}" else xp.toString()
 
-private fun languageDisplayInfo(lang: String): Triple<String, String, String> = when (lang) {
-    "english" -> Triple("🇬🇧", "English", "🇷🇺 Иваз кун")
-    "both" -> Triple("🇷🇺🇬🇧", "Русӣ ва Англисӣ", "")
-    else -> Triple("🇷🇺", "Русский язык", "🇬🇧 Иваз кун")
+private fun languageDisplayInfo(
+    lang: String,
+    s: HomeStrings,
+): Triple<String, String, String> = when (lang) {
+    "english" -> Triple("🇬🇧", s.englishLanguage, "🇷🇺 ${s.switchLanguage}")
+    "both" -> Triple("🇷🇺🇬🇧", s.bothLanguages, "")
+    else -> Triple("🇷🇺", s.russianLanguage, "🇬🇧 ${s.switchLanguage}")
 }
 
-private fun levelDisplay(level: String): String = when (level) {
-    "beginner" -> "Навомӯз"
-    "elementary" -> "Ибтидоӣ"
-    "intermediate" -> "Миёна"
-    "advanced" -> "Пешрафта"
-    else -> "Ибтидоӣ"
+private fun levelDisplay(level: String, s: HomeStrings): String = when (level) {
+    "beginner" -> s.levelBeginner
+    "elementary" -> s.levelElementary
+    "intermediate" -> s.levelIntermediate
+    "advanced" -> s.levelAdvanced
+    else -> s.levelElementary
 }
 
 private fun Modifier.tooltipTarget(
@@ -182,16 +188,18 @@ fun HomeScreen(
             Spacer(Modifier.height(TutiSpace.xs))
 
             Box(Modifier.fillMaxWidth().tooltipTarget("header_row", tooltipTargets)) {
+                // Очки и серия — по выбранному языку: у русского и
+                // английского свой прогресс, они не суммируются.
                 HeaderRow(
-                    xp = u.totalXp,
-                    streak = u.currentStreak,
+                    xp = uiState.languageXp,
+                    streak = uiState.languageStreak,
                 )
             }
 
             Box(Modifier.fillMaxWidth().tooltipTarget("streak_card", tooltipTargets)) {
                 WeeklyStreakCard(
                     streakDates = uiState.streakDates,
-                    currentStreak = u.currentStreak,
+                    currentStreak = uiState.languageStreak,
                 )
             }
 
@@ -212,6 +220,9 @@ fun HomeScreen(
                 )
             }
 
+            // Серия и выбор языка идут выше как контекст, курс — главный
+            // блок под ними: он выделен подложкой и единственной кнопкой
+            // с волной внимания.
             val course = uiState.course
             if (course != null) {
                 Column(
@@ -325,22 +336,8 @@ private fun MascotSpeech(
     // и та же фраза не повторяется. Каждая — не длиннее 16
     // символов: рядом стоят очки и кубок, и на экране 360 dp
     // пузырю остаётся около 130 dp.
-    val phrases = remember(streak, isPlus) {
-        listOf(
-            "Салом! 👋",
-            if (streak > 0) "🔥 $streak рӯз" else "Оғоз кунем! 🚀",
-            "Омода ҳастед?",
-            "Як дарс кофӣ ✨",
-            "Имрӯз чӣ омӯзем?",
-            "Вақти машқ! ⏰",
-            if (isPlus) "Plus фаъол ⭐" else "Забон осон аст!",
-            "Аъло меравед! 👏",
-            "Ман интизорам 🦜",
-            "Ҳар рӯз як қадам",
-            "Сӯҳбат кунем? 💬",
-            "Давом диҳед! 💪",
-        )
-    }
+    val home = LocalTutiStrings.current.home
+    val phrases = remember(streak, isPlus, home) { home.greetings(streak, isPlus) }
 
     var index by remember(phrases) { mutableIntStateOf(0) }
     LaunchedEffect(phrases) {
@@ -428,6 +425,7 @@ private fun XpBadge(xp: Int, modifier: Modifier = Modifier) {
 @Composable
 private fun WeeklyStreakCard(streakDates: Set<String>, currentStreak: Int) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.home
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
     val todayStr = remember { dateFormat.format(Calendar.getInstance().time) }
     val weekDays = remember {
@@ -444,48 +442,50 @@ private fun WeeklyStreakCard(streakDates: Set<String>, currentStreak: Int) {
     val todayIndex = weekDays.indexOf(todayStr)
     val doneThisWeek = weekDays.count { it in streakDates }
 
-    TutiGradientCard(
-        gradient = c.streakGradient,
+    // Серия — фоновый статус, а не главный блок экрана: серая подложка,
+    // одна строка заголовка, мелкие кружки дней. Акцент отдан курсу.
+    TutiCard(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = TutiSpace.lg,
+        radius = TutiRadius.lg,
+        contentPadding = TutiSpace.md,
+        background = c.streakCalmBg,
+        borderColor = c.streakCalmBorder,
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🔥", fontSize = 18.sp)
+                Text(
+                    text = s.weeklyStreak,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 Spacer(Modifier.width(TutiSpace.sm))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        text = "Серияи ҳафтаина",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                    )
-                    Text(
-                        text = "$doneThisWeek аз 7 рӯз",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.8f),
-                    )
-                }
+                Text(
+                    text = s.daysThisWeek(doneThisWeek),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(TutiRadius.pill))
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
                 ) {
                     Text(
-                        text = "$currentStreak 🔥",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
+                        text = "$currentStreak",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
 
-            Spacer(Modifier.height(TutiSpace.lg))
+            Spacer(Modifier.height(TutiSpace.md))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                dayLabels.forEachIndexed { i, label ->
+                s.weekDays.forEachIndexed { i, label ->
                     val dateStr = weekDays.getOrNull(i) ?: ""
                     DayCircle(
                         label = label,
@@ -517,28 +517,30 @@ private fun DayCircle(label: String, isCompleted: Boolean, isToday: Boolean, isF
         a
     } else 0f
 
+    val c = MaterialTheme.tutiColors
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(contentAlignment = Alignment.Center) {
             if (isToday && !isCompleted) {
                 Box(
                     Modifier
-                        .size(44.dp)
-                        .border(2.dp, Color.White.copy(alpha = pulseAlpha), CircleShape),
+                        .size(34.dp)
+                        .border(2.dp, c.jade.base.copy(alpha = pulseAlpha), CircleShape),
                 )
             }
             val bg = when {
-                isCompleted -> Color.White
-                isToday -> Color.White.copy(alpha = 0.24f)
-                else -> Color.White.copy(alpha = 0.1f)
+                isCompleted -> c.jade.base
+                isToday -> MaterialTheme.colorScheme.surface
+                else -> c.progressTrack
             }
             val borderMod = when {
-                isToday && !isCompleted -> Modifier.border(2.5.dp, Color.White, CircleShape)
-                isFuture -> Modifier.dashedOutline(Color.White.copy(alpha = 0.35f), 18.dp, 1.dp)
+                isToday && !isCompleted -> Modifier.border(2.dp, c.jade.base, CircleShape)
+                isFuture -> Modifier.dashedOutline(c.lockedBorder, 13.dp, 1.dp)
                 else -> Modifier
             }
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(26.dp)
                     .then(borderMod)
                     .background(bg, CircleShape),
                 contentAlignment = Alignment.Center,
@@ -546,19 +548,20 @@ private fun DayCircle(label: String, isCompleted: Boolean, isToday: Boolean, isF
                 when {
                     isCompleted -> Text(
                         "✓",
-                        color = MaterialTheme.tutiColors.jade.base,
-                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelMedium,
                     )
-                    isToday -> Text("·", color = Color.White, fontSize = 22.sp)
-                    else -> Text("·", color = Color.White.copy(alpha = 0.4f), fontSize = 18.sp)
+                    isToday -> Text("·", color = c.jade.base, fontSize = 16.sp)
+                    else -> Text("·", color = c.lockedContent, fontSize = 14.sp)
                 }
             }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = if (isCompleted || isToday) 1f else 0.55f),
+            color = if (isCompleted || isToday) MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -569,9 +572,9 @@ private fun DayCircle(label: String, isCompleted: Boolean, isToday: Boolean, isF
 
 private data class LangOption(val flag: String, val name: String, val sub: String, val key: String)
 
-private val langOptions = listOf(
-    LangOption("🇷🇺", "Русский язык", "Забони русӣ", "russian"),
-    LangOption("🇬🇧", "English", "Забони англисӣ", "english"),
+private fun langOptions(s: HomeStrings) = listOf(
+    LangOption("🇷🇺", s.russianLanguage, s.russianLanguageHint, "russian"),
+    LangOption("🇬🇧", s.englishLanguage, s.englishLanguageHint, "english"),
 )
 
 @Composable
@@ -581,18 +584,19 @@ private fun LanguageSwitchDialog(
     onSelect: (String) -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.home
     var selectedKey by remember { mutableStateOf(currentLanguage) }
 
     TutiDialog(
         onDismiss = onDismiss,
-        title = "Кадом забон?",
-        message = "Забони омӯзишро интихоб кунед",
+        title = s.chooseLanguageTitle,
+        message = s.chooseLanguageMessage,
         mascotState = TutiState.THINKING,
         accent = c.grape.base,
     ) {
         Spacer(Modifier.height(TutiSpace.xl))
         Column(verticalArrangement = Arrangement.spacedBy(TutiSpace.sm)) {
-            langOptions.forEach { opt ->
+            langOptions(s).forEach { opt ->
                 val isSelected = selectedKey == opt.key
                 Row(
                     modifier = Modifier
@@ -627,9 +631,9 @@ private fun LanguageSwitchDialog(
             }
         }
         TutiDialogActions(
-            primaryText = "Интихоб кардан",
+            primaryText = s.chooseLanguageConfirm,
             onPrimary = { onSelect(selectedKey) },
-            secondaryText = "Бекор кардан",
+            secondaryText = LocalTutiStrings.current.common.cancel,
             onSecondary = onDismiss,
             tone = app.tuti.tj.ui.components.kit.TutiButtonTone.Grape,
         )
@@ -652,7 +656,8 @@ fun SelectionCheck(selected: Boolean, color: Color, modifier: Modifier = Modifie
 
 @Composable
 private fun CurrentLanguageCard(language: String, level: String, onSwitchLanguage: () -> Unit) {
-    val (flag, langName, switchText) = languageDisplayInfo(language)
+    val s = LocalTutiStrings.current.home
+    val (flag, langName, switchText) = languageDisplayInfo(language, s)
     val c = MaterialTheme.tutiColors
 
     TutiCard(modifier = Modifier.fillMaxWidth(), radius = TutiRadius.lg) {
@@ -667,7 +672,7 @@ private fun CurrentLanguageCard(language: String, level: String, onSwitchLanguag
                 )
                 Spacer(Modifier.height(4.dp))
                 TutiPill(
-                    text = levelDisplay(level),
+                    text = levelDisplay(level, s),
                     leadingEmoji = "📊",
                     background = c.jade.soft,
                     contentColor = c.jade.onSoft,
@@ -698,6 +703,7 @@ private fun YourCourseSection(
     onOpenCourse: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.home
     val completed = progress.count { it.completed }
     val total = progress.size.coerceAtLeast(1)
     val fraction = completed.toFloat() / total
@@ -709,36 +715,44 @@ private fun YourCourseSection(
     val nextLessonId = courseId?.let { ContentProvider.getNextLessonId(it, completedIds) }
     val nextLessonContent = nextLessonId?.let { ContentProvider.getLesson(it) }
 
-    TutiSectionHeader(title = "Курси шумо", actionText = "Ҳама →", onAction = onOpenCourse)
+    TutiSectionHeader(title = s.yourCourse, actionText = s.seeAll, onAction = onOpenCourse)
 
+    // Главный блок экрана: мягкая зелёная подложка отделяет его от
+    // остальных белых карточек, заголовок на ступень крупнее.
     TutiCard(
         modifier = Modifier.fillMaxWidth(),
         onClick = onOpenCourse,
         contentPadding = TutiSpace.lg,
+        background = c.jade.soft,
+        borderColor = c.correctBorder,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             TutiIconTile(
                 emoji = courseEmoji,
                 size = TutiSize.iconTileLg,
-                background = c.jade.soft,
+                background = MaterialTheme.colorScheme.surface,
                 radius = TutiRadius.md,
             )
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
                     text = courseTitle,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "$completed аз $total дарс",
+                        text = s.lessonsProgress(completed, total),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.width(TutiSpace.sm))
-                    TutiPill(text = "$pct%")
+                    TutiPill(
+                        text = "$pct%",
+                        background = MaterialTheme.colorScheme.surface,
+                        contentColor = c.jade.onSoft,
+                    )
                 }
             }
         }
@@ -749,6 +763,7 @@ private fun YourCourseSection(
             progress = fraction,
             height = TutiSize.progressThick,
             colors = c.progressGradient,
+            trackColor = MaterialTheme.colorScheme.surface,
         )
 
         if (nextLessonContent != null) {
@@ -757,7 +772,7 @@ private fun YourCourseSection(
             // действие, ради которого экран и открывают. Остальные
             // кнопки намеренно спокойные — иначе подсветка обесценится.
             TutiButton(
-                text = "Давоми дарс: ${nextLessonContent.title}",
+                text = s.continueLesson(nextLessonContent.title),
                 onClick = onContinue,
                 leadingEmoji = nextLessonContent.emoji,
                 trailingEmoji = "→",
@@ -776,6 +791,7 @@ private fun YourCourseSection(
 private fun DailyLimitsCard(onNavigateToPlus: () -> Unit) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.home
     val isPlus = remember { PlusManager.isPlusActive(context) }
 
     // У Plus лимитов нет, а плашка «всё безлимитно» на главном не несёт
@@ -785,13 +801,13 @@ private fun DailyLimitsCard(onNavigateToPlus: () -> Unit) {
     TutiCard(modifier = Modifier.fillMaxWidth(), radius = TutiRadius.lg) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "Лимити имрӯза",
+                text = s.dailyLimit,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
             TutiPill(
-                text = "Plus гиред",
+                text = s.getPlus,
                 leadingEmoji = "⭐",
                 background = c.mango.soft,
                 contentColor = c.mango.onSoft,
@@ -865,6 +881,7 @@ private fun LimitChip(
 
 @Composable
 private fun FreeTopicsSection(topics: List<TopicProgressEntity>, onTopicClick: (String) -> Unit) {
+    val s = LocalTutiStrings.current.home
     val isEnglish = topics.any { it.topicId.startsWith("en_") }
     val studyLang = if (isEnglish) "english" else "russian"
     val topicOrder = remember(studyLang) { FreeTopicsRegistry.orderedTopicIds(studyLang) }
@@ -885,29 +902,39 @@ private fun FreeTopicsSection(topics: List<TopicProgressEntity>, onTopicClick: (
     }
 
     TutiSectionHeader(
-        title = "Мавзуъҳои озод",
-        counter = "${displayTopics.size} мавзуъ",
+        title = s.freeTopics,
+        counter = s.topicsCount(displayTopics.size),
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(TutiSpace.sm)) {
-        displayTopics.forEach { topic ->
-            TopicCard(topic = topic, onClick = { if (topic.isUnlocked) onTopicClick(topic.topicId) })
+    // Темы едут горизонтальной лентой: секция не растягивает главный
+    // экран на пятнадцать карточек.
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(TutiSpace.md)) {
+        items(displayTopics, key = { it.topicId }) { topic ->
+            TopicMiniCard(
+                topic = topic,
+                onClick = { if (topic.isUnlocked) onTopicClick(topic.topicId) },
+            )
         }
     }
 }
 
+/** Ширина карточки в ленте: два с половиной элемента в видимой части. */
+private val topicMiniCardWidth = 150.dp
+
 @Composable
-private fun TopicCard(topic: TopicProgressEntity, onClick: () -> Unit) {
+private fun TopicMiniCard(topic: TopicProgressEntity, onClick: () -> Unit) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current
     val progress = topic.progressPercent / 100f
     val done = progress >= 1f
     val isLocked = !topic.isUnlocked
     val def = FreeTopicsRegistry.definitionFor(topic.topicId)
     val emoji = def?.emoji ?: "📚"
-    val subtitle = def?.subtitle ?: ""
+    val title = def?.localizedName(s) ?: topic.topicName
+    val subtitle = localizedSubtitle(title, def?.subtitle ?: "")
 
     TutiCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.width(topicMiniCardWidth),
         onClick = if (isLocked) null else onClick,
         radius = TutiRadius.lg,
         contentPadding = TutiSpace.md,
@@ -923,52 +950,60 @@ private fun TopicCard(topic: TopicProgressEntity, onClick: () -> Unit) {
         },
         dashed = isLocked,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = if (isLocked) Modifier.alpha(0.75f) else Modifier,
-        ) {
-            TutiIconTile(
-                emoji = emoji,
-                background = if (done) c.leaf.soft else c.tileBg,
-                dimmed = isLocked,
-            )
-            Spacer(Modifier.width(TutiSpace.md))
-
-            Column(Modifier.weight(1f)) {
-                Text(
-                    text = topic.topicName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (isLocked) c.lockedContent else MaterialTheme.colorScheme.onSurface,
+        Column(modifier = if (isLocked) Modifier.alpha(0.75f) else Modifier) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TutiIconTile(
+                    emoji = emoji,
+                    size = TutiSize.iconTileSm,
+                    radius = TutiRadius.pill,
+                    background = if (done) c.leaf.soft else c.tileBg,
+                    dimmed = isLocked,
                 )
-                if (subtitle.isNotBlank()) {
+                Spacer(Modifier.width(TutiSpace.sm))
+                Column(Modifier.weight(1f)) {
                     Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = if (isLocked) c.lockedContent else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                }
-                if (!isLocked) {
-                    Spacer(Modifier.height(TutiSpace.sm))
-                    TutiProgressBar(
-                        progress = progress,
-                        colors = if (done) listOf(c.leaf.base, c.leaf.base.copy(alpha = 0.75f))
-                        else c.progressGradient,
-                    )
+                    if (subtitle.isNotBlank()) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
 
-            Spacer(Modifier.width(TutiSpace.sm))
+            Spacer(Modifier.height(TutiSpace.md))
 
-            when {
-                isLocked -> Text("🔒", fontSize = 18.sp)
-                done -> TutiPill(
-                    text = "Тамом",
-                    leadingEmoji = "⭐",
-                    background = c.mango.soft,
-                    contentColor = c.mango.onSoft,
+            // Нижняя строка одинаковой высоты у всех карточек — иначе лента
+            // получается рваной по нижнему краю.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                when {
+                    isLocked -> Text("🔒", fontSize = 12.sp)
+                    done -> Text("⭐", fontSize = 12.sp)
+                    else -> Text(
+                        text = "${topic.progressPercent}%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.width(TutiSpace.sm))
+                TutiProgressBar(
+                    progress = if (isLocked) 0f else progress,
+                    modifier = Modifier.weight(1f),
+                    height = 4.dp,
+                    colors = if (done) listOf(c.leaf.base, c.leaf.base.copy(alpha = 0.75f))
+                    else c.progressGradient,
                 )
-                else -> TutiPill(text = "${topic.progressPercent}%")
             }
         }
     }
 }
+

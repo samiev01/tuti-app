@@ -62,6 +62,8 @@ import app.tuti.tj.ui.mascot.TutiState
 import app.tuti.tj.ui.theme.TutiSize
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.localizedName
 
 private const val XP_PER_CORRECT = 10
 
@@ -84,6 +86,8 @@ fun LessonsScreen(
     val uiState = viewModel.uiState
     val questions = uiState.questions
     val topicInfo = uiState.topicInfo
+    val strings = LocalTutiStrings.current
+    val s = strings.lessons
 
     if (questions.isEmpty()) {
         Box(
@@ -93,9 +97,9 @@ fun LessonsScreen(
             contentAlignment = Alignment.Center,
         ) {
             TutiEmptyState(
-                title = "Саволҳо ёфт нашуданд",
-                message = "Ин мавзӯъ ҳоло саволҳо надорад.",
-                actionText = "← Бозгашт",
+                title = s.noQuestionsTitle,
+                message = s.noQuestionsMessage,
+                actionText = strings.common.back,
                 onAction = onFinish,
             )
         }
@@ -106,7 +110,7 @@ fun LessonsScreen(
         CompletionScreen(
             correctCount = uiState.correctCount,
             totalCount = questions.size,
-            topicName = topicInfo?.name ?: "",
+            topicName = topicInfo?.localizedName(strings) ?: "",
             topicEmoji = topicInfo?.emoji ?: "",
             onBackHome = onFinish,
             onRestart = onTryAgain,
@@ -206,7 +210,7 @@ fun LessonsScreen(
         }
 
         TutiButton(
-            text = if (uiState.checked) "Давом додан" else "Санҷидан",
+            text = if (uiState.checked) strings.common.continueLong else strings.common.check,
             onClick = {
                 if (uiState.checked) {
                     viewModel.continueQuiz()
@@ -238,12 +242,13 @@ fun LessonsScreen(
 @Composable
 private fun QuestionTypeBadge(type: QuestionType) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.lessons
     val (label, accent) = when (type) {
-        QuestionType.TRANSLATE -> "Тарҷума" to c.jade
-        QuestionType.CHOOSE_TRANSLATION -> "Интихоб" to c.leaf
-        QuestionType.FILL_BLANK -> "Пур кунед" to c.mango
-        QuestionType.MATCH_WORD -> "Мувофиқ" to c.sky
-        QuestionType.LISTEN -> "Гӯш кунед" to c.grape
+        QuestionType.TRANSLATE -> s.typeTranslate to c.jade
+        QuestionType.CHOOSE_TRANSLATION -> s.typeChoose to c.leaf
+        QuestionType.FILL_BLANK -> s.typeFillBlank to c.mango
+        QuestionType.MATCH_WORD -> s.typeMatch to c.sky
+        QuestionType.LISTEN -> s.typeListen to c.grape
     }
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
         TutiPill(
@@ -420,13 +425,20 @@ private fun FeedbackCard(isCorrect: Boolean, correctAnswer: String, explanation:
         Spacer(Modifier.width(TutiSpace.md))
         Column {
             Text(
-                text = if (isCorrect) "Офарин! Дуруст!" else "Нодуруст…",
+                text = with(LocalTutiStrings.current.common) {
+                    if (isCorrect) correctTitle else wrongTitle
+                },
                 style = MaterialTheme.typography.titleMedium,
                 color = fg,
             )
             Text(
-                text = if (isCorrect) "+$XP_PER_CORRECT очки"
-                else "Ҷавоби дуруст: $correctAnswer",
+                text = LocalTutiStrings.current.common.let { common ->
+                    if (isCorrect) {
+                        common.xp(XP_PER_CORRECT)
+                    } else {
+                        common.correctAnswer(correctAnswer)
+                    }
+                },
                 style = MaterialTheme.typography.titleSmall,
                 color = fg.copy(alpha = 0.85f),
             )
@@ -456,6 +468,8 @@ private fun CompletionScreen(
     onRestart: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val common = strings.common
     val stars = when {
         correctCount >= 9 -> 3
         correctCount >= 7 -> 2
@@ -510,9 +524,9 @@ private fun CompletionScreen(
 
         Text(
             text = when {
-                correctCount >= 8 -> "Аъло! 🎉"
-                correctCount >= 5 -> "Хуб! 👍"
-                else -> "Кӯшиш кунед! 💪"
+                correctCount >= 8 -> common.resultExcellent
+                correctCount >= 5 -> common.resultGood
+                else -> common.resultTryHarder
             },
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
@@ -530,7 +544,7 @@ private fun CompletionScreen(
 
         TutiCard(modifier = Modifier.fillMaxWidth(), contentPadding = TutiSpace.xl) {
             Text(
-                text = "Шумо $correctCount аз $totalCount дуруст ҷавоб додед!",
+                text = strings.lessons.correctOf(correctCount, totalCount),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
@@ -543,17 +557,26 @@ private fun CompletionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
             ) {
-                StatPill("💎", "+$xpEarned", "очки", c.grape.soft, c.grape.onSoft, Modifier.weight(1f))
-                StatPill("⭐", "$stars/3", "ситора", c.mango.soft, c.mango.onSoft, Modifier.weight(1f))
-                StatPill("🎯", "$percent%", "дақиқӣ", c.jade.soft, c.jade.onSoft, Modifier.weight(1f))
+                StatPill(
+                    "💎", "+$xpEarned", common.points,
+                    c.grape.soft, c.grape.onSoft, Modifier.weight(1f),
+                )
+                StatPill(
+                    "⭐", "$stars/3", common.stars,
+                    c.mango.soft, c.mango.onSoft, Modifier.weight(1f),
+                )
+                StatPill(
+                    "🎯", "$percent%", common.accuracy,
+                    c.jade.soft, c.jade.onSoft, Modifier.weight(1f),
+                )
             }
         }
 
         Spacer(Modifier.height(TutiSpace.xxl))
 
-        TutiButton(text = "Ба асосӣ", onClick = onBackHome, leadingEmoji = "🏠")
+        TutiButton(text = common.toHome, onClick = onBackHome, leadingEmoji = "🏠")
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "Аз нав", onClick = onRestart, leadingEmoji = "🔄")
+        TutiSecondaryButton(text = common.restart, onClick = onRestart, leadingEmoji = "🔄")
     }
 }
 

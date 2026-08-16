@@ -85,6 +85,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 private const val TAG = "LessonFlowScreen"
 
@@ -140,9 +141,9 @@ fun LessonFlowScreen(
             contentAlignment = Alignment.Center,
         ) {
             TutiErrorState(
-                title = "Дарс ёфт нашуд",
-                message = "Ин дарс дастрас нест. Ба рӯйхати дарсҳо баргардед.",
-                retryText = "← Бозгашт",
+                title = LocalTutiStrings.current.lessonFlow.notFoundTitle,
+                message = LocalTutiStrings.current.lessonFlow.notFoundMessage,
+                retryText = LocalTutiStrings.current.common.back,
                 onRetry = onBack,
             )
         }
@@ -224,15 +225,15 @@ fun LessonFlowScreen(
     if (showExitDialog) {
         TutiDialog(
             onDismiss = { showExitDialog = false },
-            title = "Баромадан?",
-            message = "Пешрафти шумо дар ин дарс захира намешавад.",
+            title = LocalTutiStrings.current.lessonFlow.exitTitle,
+            message = LocalTutiStrings.current.lessonFlow.exitMessage,
             mascotState = TutiState.SAD,
             accent = MaterialTheme.tutiColors.coral.base,
         ) {
             TutiDialogActions(
-                primaryText = "Не, мемонам",
+                primaryText = LocalTutiStrings.current.lessonFlow.exitStay,
                 onPrimary = { showExitDialog = false },
-                secondaryText = "Ҳа, мебароям",
+                secondaryText = LocalTutiStrings.current.lessonFlow.exitConfirm,
                 onSecondary = { showExitDialog = false; onBack() },
             )
         }
@@ -255,13 +256,13 @@ fun LessonFlowScreen(
 
         if (showCorrectTip) {
             TutiTip(
-                text = "Офарин! 🎉 Шумо аъло кор мекунед! Давом диҳед!",
+                text = LocalTutiStrings.current.lessonFlow.praise,
                 onDismiss = { showCorrectTip = false },
             )
         }
         if (showWrongTip) {
             TutiTip(
-                text = "Хато кардед — ин муҳим нест! Аз хатоҳо меомӯзем! 💪",
+                text = LocalTutiStrings.current.lessonFlow.encourage,
                 onDismiss = { showWrongTip = false },
             )
         }
@@ -475,6 +476,7 @@ private fun LessonTopBar(progress: Float, hearts: Int, onBack: () -> Unit) {
 
 @Composable
 private fun DialoguePhaseUI(dialogue: Dialogue, onContinue: () -> Unit) {
+    val s = LocalTutiStrings.current.lessonFlow
     var visibleLines by remember { mutableIntStateOf(1) }
     val allShown = visibleLines >= dialogue.lines.size
 
@@ -485,7 +487,7 @@ private fun DialoguePhaseUI(dialogue: Dialogue, onContinue: () -> Unit) {
     ) {
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_DIALOGUE,
-            text = "Аввал диалогро хонед! Ин суҳбати воқеӣ аст 📖",
+            text = s.dialogueHint,
         )
 
         Column(
@@ -503,7 +505,7 @@ private fun DialoguePhaseUI(dialogue: Dialogue, onContinue: () -> Unit) {
                         color = MaterialTheme.colorScheme.onBackground,
                     )
                     Text(
-                        text = "Барои тарҷума ба ҷумла зер кунед",
+                        text = s.dialogueTapForTranslation,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -521,7 +523,11 @@ private fun DialoguePhaseUI(dialogue: Dialogue, onContinue: () -> Unit) {
         Spacer(Modifier.height(TutiSpace.md))
 
         TutiButton(
-            text = if (!allShown) "Давом" else "Калимаҳои нав",
+            text = if (!allShown) {
+                LocalTutiStrings.current.common.continueShort
+            } else {
+                s.newWordsButton
+            },
             onClick = { if (!allShown) visibleLines++ else onContinue() },
             tone = if (allShown) TutiButtonTone.Jade else TutiButtonTone.Sky,
             trailingEmoji = "→",
@@ -576,7 +582,7 @@ private fun DialogueLineCard(line: DialogueLine, isLeft: Boolean) {
             } else {
                 Spacer(Modifier.height(TutiSpace.xs))
                 Text(
-                    text = "тарҷума →",
+                    text = LocalTutiStrings.current.lessonFlow.translationArrow,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -590,6 +596,8 @@ private fun DialogueLineCard(line: DialogueLine, isLeft: Boolean) {
 @Composable
 private fun WordsPhaseUI(words: List<WordItem>, onContinue: () -> Unit, onSkip: () -> Unit) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.lessonFlow
     var currentIdx by remember { mutableIntStateOf(0) }
     val word = words.getOrNull(currentIdx)
 
@@ -601,7 +609,7 @@ private fun WordsPhaseUI(words: List<WordItem>, onContinue: () -> Unit, onSkip: 
     ) {
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_WORDS,
-            text = "Калимаҳои навро ёд гиред! ⭐",
+            text = s.learnNewWords,
         )
 
         Row(
@@ -610,7 +618,7 @@ private fun WordsPhaseUI(words: List<WordItem>, onContinue: () -> Unit, onSkip: 
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Калимаҳои нав",
+                text = s.newWords,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -702,12 +710,12 @@ private fun WordsPhaseUI(words: List<WordItem>, onContinue: () -> Unit, onSkip: 
         Spacer(Modifier.weight(1f))
 
         TutiButton(
-            text = if (currentIdx + 1 >= words.size) "Давом" else "Баъдӣ",
+            text = if (currentIdx + 1 >= words.size) strings.common.continueShort else s.nextWord,
             onClick = { if (currentIdx + 1 >= words.size) onContinue() else currentIdx++ },
             trailingEmoji = "→",
         )
         Spacer(Modifier.height(TutiSpace.xs))
-        TutiGhostButton(text = "Гузаштан →", onClick = onSkip)
+        TutiGhostButton(text = strings.common.skipArrow, onClick = onSkip)
     }
 }
 
@@ -716,6 +724,7 @@ private fun WordsPhaseUI(words: List<WordItem>, onContinue: () -> Unit, onSkip: 
 @Composable
 private fun GrammarPhaseUI(tip: GrammarTip, onContinue: () -> Unit) {
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.lessonFlow
 
     Column(
         modifier = Modifier
@@ -725,7 +734,7 @@ private fun GrammarPhaseUI(tip: GrammarTip, onContinue: () -> Unit) {
     ) {
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_GRAMMAR,
-            text = "Ин қоидаи грамматика аст! Хуб хонед 📝",
+            text = s.grammarHint,
         )
 
         Column(
@@ -737,7 +746,7 @@ private fun GrammarPhaseUI(tip: GrammarTip, onContinue: () -> Unit) {
                 TutiIconTile(emoji = "💡", background = c.grape.soft)
                 Spacer(Modifier.width(TutiSpace.md))
                 Text(
-                    text = "Грамматика",
+                    text = s.grammarTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
@@ -789,7 +798,7 @@ private fun GrammarPhaseUI(tip: GrammarTip, onContinue: () -> Unit) {
         Spacer(Modifier.height(TutiSpace.lg))
 
         TutiButton(
-            text = "Фаҳмидам!",
+            text = s.grammarUnderstood,
             onClick = onContinue,
             tone = TutiButtonTone.Grape,
             trailingEmoji = "✓",
@@ -809,7 +818,7 @@ private fun ExercisePhaseUI(
     if (exercise == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Машқ ёфт нашуд",
+                text = LocalTutiStrings.current.lessonFlow.noExerciseTitle,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -828,11 +837,14 @@ private fun ExercisePhaseUI(
             if (exerciseIndex == 0) {
                 SmartTutiTip(
                     tipId = TutiTipsManager.TIP_FIRST_EXERCISE,
-                    text = "Вариантро интихоб кунед ва «Санҷидан»-ро пахш кунед! 🎯",
+                    text = LocalTutiStrings.current.lessonFlow.exerciseHint,
                 )
             }
 
-            TutiPill(text = "Машқи ${exerciseIndex + 1} аз ${exercises.size}")
+            TutiPill(
+                text = LocalTutiStrings.current.lessonFlow
+                    .exerciseCounter(exerciseIndex + 1, exercises.size),
+            )
 
             Spacer(Modifier.height(TutiSpace.lg))
 
@@ -852,6 +864,7 @@ private fun CompletionPhaseUI(
     onContinue: () -> Unit,
 ) {
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
     val score = if (totalExercises > 0) (correctCount * 100) / totalExercises else 0
     val stars = when {
         score >= 90 -> 3
@@ -883,7 +896,7 @@ private fun CompletionPhaseUI(
     ) {
         SmartTutiTip(
             tipId = TutiTipsManager.TIP_FIRST_COMPLETE,
-            text = "Табрик! Дарси аввалро тамом кардед! Ситораҳо гиред! 🌟",
+            text = strings.lessonFlow.congratsFirstLesson,
         )
 
         Column(
@@ -913,7 +926,11 @@ private fun CompletionPhaseUI(
             Spacer(Modifier.height(TutiSpace.lg))
 
             Text(
-                text = if (stars >= 2) "Офарин! 🎉" else "Хуб! 👍",
+                text = if (stars >= 2) {
+                    strings.common.resultExcellent
+                } else {
+                    strings.common.resultGood
+                },
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -933,7 +950,7 @@ private fun CompletionPhaseUI(
                 StatItem(
                     emoji = "✅",
                     value = "$correctCount/$totalExercises",
-                    label = "Дуруст",
+                    label = strings.lessonFlow.correctLabel,
                     bg = c.correctBg,
                     fg = c.correctText,
                     modifier = Modifier.weight(1f),
@@ -941,7 +958,7 @@ private fun CompletionPhaseUI(
                 StatItem(
                     emoji = "💎",
                     value = "+$xpEarned",
-                    label = "очки",
+                    label = strings.common.points,
                     bg = c.grape.soft,
                     fg = c.grape.onSoft,
                     modifier = Modifier.weight(1f),
@@ -949,7 +966,7 @@ private fun CompletionPhaseUI(
                 StatItem(
                     emoji = "📝",
                     value = "${lesson.newWords.size}",
-                    label = "Калима",
+                    label = strings.lessonFlow.wordLabel,
                     bg = c.sky.soft,
                     fg = c.sky.onSoft,
                     modifier = Modifier.weight(1f),
@@ -958,7 +975,7 @@ private fun CompletionPhaseUI(
         }
 
         TutiButton(
-            text = "Давом додан",
+            text = strings.common.continueLong,
             onClick = onContinue,
             trailingEmoji = "→",
         )
@@ -1000,6 +1017,7 @@ private fun StatItem(
 
 @Composable
 private fun FailedPhaseUI(onRestart: () -> Unit, onExit: () -> Unit) {
+    val strings = LocalTutiStrings.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1018,21 +1036,21 @@ private fun FailedPhaseUI(onRestart: () -> Unit, onExit: () -> Unit) {
         Spacer(Modifier.height(TutiSpace.lg))
 
         Text(
-            text = "Дилҳо тамом шуданд",
+            text = strings.lessonFlow.heartsOverTitle,
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Text(
-            text = "Ин муҳим нест — ҳама аз хатоҳо меомӯзанд.\nАз нав оғоз кунед!",
+            text = strings.lessonFlow.heartsOverMessage,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = TutiSpace.sm, bottom = TutiSpace.xxl),
         )
 
-        TutiButton(text = "Аз нав", onClick = onRestart, leadingEmoji = "🔄")
+        TutiButton(text = strings.common.restart, onClick = onRestart, leadingEmoji = "🔄")
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "Баромадан", onClick = onExit)
+        TutiSecondaryButton(text = strings.common.exit, onClick = onExit)
     }
 }

@@ -56,15 +56,23 @@ interface ProgressDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDailyStreak(streak: DailyStreakEntity)
 
-    @Query("SELECT * FROM daily_streaks WHERE date = :date LIMIT 1")
-    suspend fun getDailyStreakOnce(date: String): DailyStreakEntity?
+    @Query("SELECT * FROM daily_streaks WHERE date = :date AND language = :language LIMIT 1")
+    suspend fun getDailyStreakOnce(date: String, language: String): DailyStreakEntity?
 
+    /** Любой язык: общая серия аккаунта для рейтинга и уведомлений. */
     @Query("SELECT * FROM daily_streaks WHERE date = :date LIMIT 1")
-    fun getDailyStreakSync(date: String): DailyStreakEntity?
+    suspend fun getAnyDailyStreakOnce(date: String): DailyStreakEntity?
 
-    @Query("SELECT * FROM daily_streaks WHERE date = :date LIMIT 1")
-    fun getTodayStats(date: String): Flow<DailyStreakEntity?>
+    @Query("SELECT * FROM daily_streaks WHERE date = :date AND language = :language LIMIT 1")
+    fun getTodayStats(date: String, language: String): Flow<DailyStreakEntity?>
 
-    @Query("SELECT * FROM daily_streaks ORDER BY date DESC LIMIT 7")
-    fun getWeekStreaks(): Flow<List<DailyStreakEntity>>
+    @Query("SELECT * FROM daily_streaks WHERE language = :language ORDER BY date DESC LIMIT 7")
+    fun getWeekStreaks(language: String): Flow<List<DailyStreakEntity>>
+
+    /** Даты занятий по языку, новые сверху: по ним пересчитываем серию. */
+    @Query("SELECT DISTINCT date FROM daily_streaks WHERE language = :language ORDER BY date DESC")
+    suspend fun getStudyDates(language: String): List<String>
+
+    @Query("SELECT DISTINCT date FROM daily_streaks ORDER BY date DESC")
+    suspend fun getAllStudyDates(): List<String>
 }

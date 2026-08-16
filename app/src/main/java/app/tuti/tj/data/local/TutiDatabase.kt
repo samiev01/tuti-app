@@ -10,7 +10,9 @@ import app.tuti.tj.data.local.dao.UserDao
 import app.tuti.tj.data.local.dao.ProgressDao
 import app.tuti.tj.data.local.dao.WordDao
 import app.tuti.tj.data.local.dao.CourseProgressDao
+import app.tuti.tj.data.local.dao.LanguageStatsDao
 import app.tuti.tj.data.local.entity.DailyStreakEntity
+import app.tuti.tj.data.local.entity.LanguageStatsEntity
 import app.tuti.tj.data.local.entity.LearnedWordEntity
 import app.tuti.tj.data.local.entity.LessonProgressEntity
 import app.tuti.tj.data.local.entity.ModuleProgressEntity
@@ -25,8 +27,9 @@ import app.tuti.tj.data.local.entity.UserEntity
         DailyStreakEntity::class,
         LessonProgressEntity::class,
         ModuleProgressEntity::class,
+        LanguageStatsEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class TutiDatabase : RoomDatabase() {
@@ -35,6 +38,7 @@ abstract class TutiDatabase : RoomDatabase() {
     abstract fun progressDao(): ProgressDao
     abstract fun wordDao(): WordDao
     abstract fun courseProgressDao(): CourseProgressDao
+    abstract fun languageStatsDao(): LanguageStatsDao
 
     companion object {
         @Volatile
@@ -47,7 +51,7 @@ abstract class TutiDatabase : RoomDatabase() {
                     TutiDatabase::class.java,
                     "tuti_database",
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { INSTANCE = it }
             }
@@ -123,6 +127,51 @@ abstract class TutiDatabase : RoomDatabase() {
                 )
                 db.execSQL(
                     "CREATE UNIQUE INDEX IF NOT EXISTS index_module_progress_moduleId ON module_progress(moduleId)",
+                )
+            }
+        }
+
+        /**
+         * Очки и серия становятся раздельными по языкам.
+         * Всё, что накоплено до обновления, отдаём текущему языку
+         * пользователя: второй язык начинается с чистого листа.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS language_stats (
+                        language TEXT PRIMARY KEY NOT NULL,
+                        totalXp INTEGER NOT NULL DEFAULT 0,
+                        currentStreak INTEGER NOT NULL DEFAULT 0,
+                        longestStreak INTEGER NOT NULL DEFAULT 0
+                    )
+                    """.trimIndent(),
+                )
+
+                if (!hasColumn(db, "daily_streaks", "language")) {
+                    db.execSQL(
+                        "ALTER TABLE daily_streaks ADD COLUMN language TEXT NOT NULL DEFAULT ''",
+                    )
+                }
+
+                val currentLanguage = db.query(
+                    "SELECT selectedLanguage FROM users WHERE id = 1",
+                ).use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getString(0) else null
+                } ?: "russian"
+
+                db.execSQL(
+                    "UPDATE daily_streaks SET language = ? WHERE language = ''",
+                    arrayOf(currentLanguage),
+                )
+
+                db.execSQL(
+                    """
+                    INSERT OR REPLACE INTO language_stats (language, totalXp, currentStreak, longestStreak)
+                    SELECT ?, totalXp, currentStreak, longestStreak FROM users WHERE id = 1
+                    """.trimIndent(),
+                    arrayOf(currentLanguage),
                 )
             }
         }

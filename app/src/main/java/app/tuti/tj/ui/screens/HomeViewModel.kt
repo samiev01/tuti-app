@@ -27,6 +27,9 @@ data class HomeUiState(
     val streakDates: Set<String> = emptySet(),
     val course: Course? = null,
     val courseProgress: List<LessonProgressEntity> = emptyList(),
+    /** Очки и серия только по выбранному языку, а не по всему аккаунту. */
+    val languageXp: Int = 0,
+    val languageStreak: Int = 0,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -59,12 +62,21 @@ class HomeViewModel(
             initialValue = emptyList(),
         )
 
-    private val streakDatesFlow = repository.getWeekStreaks()
+    private val streakDatesFlow = languageFlow
+        .flatMapLatest { repository.getWeekStreaks(it) }
         .map { weekStreaks -> weekStreaks.map { it.date }.toSet() }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptySet(),
+        )
+
+    private val languageStatsFlow = languageFlow
+        .flatMapLatest { repository.getLanguageStats(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
         )
 
     private val courseIdFlow = userFlow
@@ -105,13 +117,24 @@ class HomeViewModel(
         initialValue = null to emptyList(),
     )
 
+    // combine типизирован до пяти потоков — недельные дни и статистику
+    // языка сводим в одну пару заранее.
+    private val statsBundleFlow = combine(streakDatesFlow, languageStatsFlow) { dates, stats ->
+        dates to stats
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptySet<String>() to null,
+    )
+
     val uiState: StateFlow<HomeUiState> = combine(
         userFlow,
         languageFlow,
         topicsFlow,
-        streakDatesFlow,
+        statsBundleFlow,
         courseBundleFlow,
-    ) { user, language, topics, streakDates, courseBundle ->
+    ) { user, language, topics, statsBundle, courseBundle ->
+        val (streakDates, stats) = statsBundle
         HomeUiState(
             user = user,
             language = language,
@@ -119,6 +142,8 @@ class HomeViewModel(
             streakDates = streakDates,
             course = courseBundle.first,
             courseProgress = courseBundle.second,
+            languageXp = stats?.totalXp ?: 0,
+            languageStreak = stats?.currentStreak ?: 0,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -128,7 +153,10 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            languageFlow.collect { repository.ensureTopicsExist(it) }
+            languageFlow.collect {
+                repository.ensureTopicsExist(it)
+                repository.ensureLanguageStatsExist(it)
+            }
         }
         viewModelScope.launch {
             courseIdFlow.collect { courseId ->

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import app.tuti.tj.data.remote.TutiChatApi
 import kotlinx.coroutines.launch
 import java.util.UUID
+import app.tuti.tj.ui.i18n.LanguageManager
 
 data class UiChatMessage(
     val id: String = UUID.randomUUID().toString(),
@@ -118,7 +119,7 @@ class TutiChatViewModel : ViewModel() {
     private fun appendNetworkError(userText: String) {
         lastFailedUserText = userText
         messages = messages + UiChatMessage(
-            text = "Бубахшед, алоқа қатъ шуд. Боз кӯшиш кунед.",
+            text = LanguageManager.strings.chat.networkError,
             isUser = false,
             isError = true,
         )

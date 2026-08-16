@@ -65,6 +65,7 @@ import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.LocalTutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  МАШҚИ ИМЛО
@@ -93,7 +94,7 @@ fun WritingPracticeScreen(
 
     if (!uiState.loaded) {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            TutiLoadingState(message = "Машқро тайёр мекунем…")
+            TutiLoadingState(message = LocalTutiStrings.current.practice.preparingPractice)
         }
         return
     }
@@ -128,6 +129,8 @@ private fun EmptyWritingScreen(
     onBack: () -> Unit,
     onGoToLessons: () -> Unit,
 ) {
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -138,22 +141,27 @@ private fun EmptyWritingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TutiEmptyState(
-            title = "Аввал калимаҳоро омӯзед!",
-            message = if (wordsCount > 0)
-                "Шумо $wordsCount калима доред. Ҳадди ақал $PRACTICE_MIN_WORDS_REQUIRED калима лозим аст."
-            else
-                "Пас аз омӯхтани калимаҳо онҳоро дар ин ҷо машқ карда метавонед.",
+            title = s.notEnoughWordsTitle,
+            message = if (wordsCount > 0) {
+                s.notEnoughWordsMessage(wordsCount, PRACTICE_MIN_WORDS_REQUIRED)
+            } else {
+                s.learnFirstMessage
+            },
             mascotState = TutiState.THINKING,
         )
         Spacer(Modifier.height(TutiSpace.lg))
         TutiButton(
-            text = "Ба дарсҳо рафтан",
+            text = s.toLessons,
             onClick = onGoToLessons,
             tone = TutiButtonTone.Mango,
             leadingEmoji = "📚",
         )
         Spacer(Modifier.height(TutiSpace.sm))
-        TutiSecondaryButton(text = "← Бозгашт", onClick = onBack, tone = TutiButtonTone.Mango)
+        TutiSecondaryButton(
+            text = strings.common.back,
+            onClick = onBack,
+            tone = TutiButtonTone.Mango,
+        )
     }
 }
 
@@ -173,6 +181,8 @@ private fun WritingQuiz(
 ) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
+    val s = strings.practice
     val keyboardController = LocalSoftwareKeyboardController.current
     val total = uiState.questions.size
 
@@ -190,8 +200,8 @@ private fun WritingQuiz(
             total = total,
             onPrimary = onBack,
             onRestart = onRestart,
-            correctLabel = "дуруст навишт",
-            wrongLabel = "хато",
+            correctLabel = s.correctAnswerLabel,
+            wrongLabel = s.wrongAnswerLabel,
             accentColor = c.mango.base,
         )
         return
@@ -249,12 +259,12 @@ private fun WritingQuiz(
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = "Навиштан",
+                    text = s.writingTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    text = "${uiState.currentIndex + 1} аз $total",
+                    text = strings.common.ofCount(uiState.currentIndex + 1, total),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -277,7 +287,7 @@ private fun WritingQuiz(
         Spacer(Modifier.height(TutiSpace.xl))
 
         Text(
-            text = "Гӯш кунед ва калимаро нависед",
+            text = s.listenAndWrite,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -324,7 +334,7 @@ private fun WritingQuiz(
             enabled = editable,
             placeholder = {
                 Text(
-                    text = "Калимаро нависед…",
+                    text = s.writeWordPlaceholder,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -348,7 +358,7 @@ private fun WritingQuiz(
         when (uiState.answerState) {
             WritingAnswerState.TYPING -> {
                 TutiButton(
-                    text = "Санҷидан",
+                    text = strings.common.check,
                     onClick = { submit() },
                     tone = TutiButtonTone.Mango,
                     trailingEmoji = "✓",
@@ -360,14 +370,14 @@ private fun WritingQuiz(
             WritingAnswerState.WRONG -> {
                 FeedbackBanner(
                     emoji = "✕",
-                    title = "Нодуруст! Боз кӯшиш кунед",
-                    subtitle = "Кӯшиши ${uiState.attempts}/$MAX_ATTEMPTS",
+                    title = s.wrongTryAgain,
+                    subtitle = s.attempts(uiState.attempts, MAX_ATTEMPTS),
                     bgColor = c.wrongBg,
                     textColor = c.wrongText,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
                 TutiButton(
-                    text = "Боз кӯшиш",
+                    text = strings.common.tryAgain,
                     onClick = onRetryAfterWrong,
                     tone = TutiButtonTone.Mango,
                     leadingEmoji = "🔄",
@@ -377,14 +387,18 @@ private fun WritingQuiz(
             WritingAnswerState.CORRECT -> {
                 FeedbackBanner(
                     emoji = "✓",
-                    title = "Офарин! Дуруст!",
-                    subtitle = "«${question.correctAnswer}» — ${question.translation}",
+                    title = strings.common.correctTitle,
+                    subtitle = s.correctWithTranslation(question.correctAnswer, question.translation),
                     bgColor = c.correctBg,
                     textColor = c.correctText,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
                 TutiButton(
-                    text = if (uiState.currentIndex < total - 1) "Идома" else "Натиҷа",
+                    text = if (uiState.currentIndex < total - 1) {
+                        strings.common.next
+                    } else {
+                        strings.common.result
+                    },
                     onClick = onAdvance,
                     tone = TutiButtonTone.Leaf,
                     trailingEmoji = "→",
@@ -394,14 +408,18 @@ private fun WritingQuiz(
             WritingAnswerState.SHOW_ANSWER -> {
                 FeedbackBanner(
                     emoji = "💡",
-                    title = "Ҷавоби дуруст: ${question.correctAnswer}",
-                    subtitle = "Тарҷума: ${question.translation}",
+                    title = strings.common.correctAnswer(question.correctAnswer),
+                    subtitle = s.translationOf(question.translation),
                     bgColor = c.wrongBg,
                     textColor = c.wrongText,
                 )
                 Spacer(Modifier.height(TutiSpace.md))
                 TutiButton(
-                    text = if (uiState.currentIndex < total - 1) "Идома" else "Натиҷа",
+                    text = if (uiState.currentIndex < total - 1) {
+                        strings.common.next
+                    } else {
+                        strings.common.result
+                    },
                     onClick = onAdvance,
                     tone = TutiButtonTone.Mango,
                     trailingEmoji = "→",

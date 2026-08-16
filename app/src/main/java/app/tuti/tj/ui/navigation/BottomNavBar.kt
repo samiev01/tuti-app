@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.NavStrings
 import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.tutiColors
@@ -56,13 +58,20 @@ import app.tuti.tj.ui.theme.tutiColors
 
 enum class BottomNavItem(
     val route: String,
-    val label: String,
     val emoji: String,
 ) {
-    Home("home", "Асосӣ", "🏠"),
-    Lessons("lessons", "Дарсҳо", "📚"),
-    Practice("practice", "Машқ", "🎯"),
-    Profile("profile", "Профил", "👤"),
+    Home("home", "🏠"),
+    Lessons("lessons", "📚"),
+    Practice("practice", "🎯"),
+    Profile("profile", "👤"),
+}
+
+/** Подпись вкладки берётся из словаря: она зависит от языка интерфейса. */
+private fun BottomNavItem.label(strings: NavStrings): String = when (this) {
+    BottomNavItem.Home -> strings.home
+    BottomNavItem.Lessons -> strings.lessons
+    BottomNavItem.Practice -> strings.practice
+    BottomNavItem.Profile -> strings.profile
 }
 
 /** Маршруты, на которых панель остаётся видимой. */
@@ -74,6 +83,7 @@ fun BottomNavBar(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val c = MaterialTheme.tutiColors
+    val nav = LocalTutiStrings.current.nav
 
     // Цвет вкладки берётся из акцентных семейств палитры
     val accents = listOf(c.jade, c.sky, c.mango, c.grape)
@@ -113,7 +123,7 @@ fun BottomNavBar(navController: NavController) {
             tabs.take(2).forEachIndexed { i, item ->
                 NavTab(
                     emoji = item.emoji,
-                    label = item.label,
+                    label = item.label(nav),
                     selected = currentRoute == item.route,
                     activeBg = accents[i].soft,
                     activeText = accents[i].onSoft,
@@ -131,7 +141,7 @@ fun BottomNavBar(navController: NavController) {
             tabs.drop(2).forEachIndexed { i, item ->
                 NavTab(
                     emoji = item.emoji,
-                    label = item.label,
+                    label = item.label(nav),
                     selected = currentRoute == item.route,
                     activeBg = accents[i + 2].soft,
                     activeText = accents[i + 2].onSoft,
@@ -262,7 +272,7 @@ private fun LeaderboardTab(
         }
         Spacer(Modifier.height(3.dp))
         Text(
-            text = "Рейтинг",
+            text = LocalTutiStrings.current.nav.leaderboard,
             style = MaterialTheme.typography.labelSmall,
             color = labelColor,
         )

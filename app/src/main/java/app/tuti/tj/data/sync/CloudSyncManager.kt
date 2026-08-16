@@ -249,6 +249,17 @@ object CloudSyncManager {
                     )
                 )
 
+                // В облаке цифры общие по аккаунту — отдаём их языку, который
+                // был выбран при выгрузке: локально статистика теперь по языкам.
+                roomDb.languageStatsDao().insertStats(
+                    app.tuti.tj.data.local.entity.LanguageStatsEntity(
+                        language = if (selectedLang == "english") "english" else "russian",
+                        totalXp = totalXp,
+                        currentStreak = currentStreak,
+                        longestStreak = longestStreak,
+                    )
+                )
+
                 restoreTopicProgress(context, userId)
                 restoreLessonProgress(context, userId)
                 restoreLearnedWords(context, userId)

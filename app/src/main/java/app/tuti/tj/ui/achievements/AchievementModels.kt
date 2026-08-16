@@ -1,5 +1,7 @@
 package app.tuti.tj.ui.achievements
 
+import app.tuti.tj.ui.i18n.AchievementsStrings
+
 data class Achievement(
     val id: String,
     val icon: String,
@@ -37,6 +39,7 @@ fun buildAchievements(
     perfectLessons: Int,
     modulesCompleted: Int,
     languagesStarted: Int,
+    s: AchievementsStrings,
 ): List<Achievement> {
     fun ach(
         id: String,
@@ -58,22 +61,22 @@ fun buildAchievements(
     )
 
     return listOf(
-        ach("streak_3", "\uD83D\uDD25", "Серияи 3 рӯза", "3 рӯз пай дар пай омӯхтед", 3, streak, 30),
-        ach("streak_7", "\uD83D\uDD25", "Серияи 7 рӯза", "7 рӯз пай дар пай омӯхтед", 7, streak, 50),
-        ach("streak_30", "\uD83D\uDD25", "Серияи 30 рӯза", "30 рӯз пай дар пай омӯхтед", 30, streak, 200),
-        ach("words_50", "\u2B50", "50 калима", "50 калимаи нав омӯхтед", 50, wordsLearned, 50),
-        ach("words_100", "\u2B50", "100 калима", "100 калимаи нав омӯхтед", 100, wordsLearned, 100),
-        ach("words_500", "\u2B50", "500 калима", "500 калимаи нав омӯхтед", 500, wordsLearned, 300),
-        ach("lessons_5", "\uD83D\uDCDA", "5 дарс", "5 дарс тамом кардед", 5, lessonsCompleted, 30),
-        ach("lessons_20", "\uD83D\uDCDA", "20 дарс", "20 дарс тамом кардед", 20, lessonsCompleted, 100),
-        ach("lessons_50", "\uD83D\uDCDA", "50 дарс", "50 дарс тамом кардед", 50, lessonsCompleted, 200),
-        ach("chat_10", "\uD83D\uDCAC", "Гуфтугӯчӣ", "10 суҳбат бо Tuti", 10, chatMessages, 50),
-        ach("chat_50", "\uD83D\uDCAC", "Сӯҳбатдон", "50 суҳбат бо Tuti", 50, chatMessages, 150),
-        ach("perfect_5", "\uD83C\uDFAF", "Бехато", "5 дарс бе хато тамом кардед", 5, perfectLessons, 100),
-        ach("module_1", "\uD83C\uDFC6", "Модули аввал", "Модули 1-ро тамом кардед", 1, modulesCompleted, 50),
-        ach("modules_5", "\uD83C\uDFC6", "5 модул", "5 модулро тамом кардед", 5, modulesCompleted, 150),
-        ach("modules_10", "\uD83D\uDC51", "Устод", "10 модулро тамом кардед", 10, modulesCompleted, 500),
-        ach("langs_2", "\uD83C\uDF0D", "Ду забон", "Ҳар 2 забонро оғоз кунед", 2, languagesStarted, 100),
+        ach("streak_3", "\uD83D\uDD25", s.streak3, s.streak3Desc, 3, streak, 30),
+        ach("streak_7", "\uD83D\uDD25", s.streak7, s.streak7Desc, 7, streak, 50),
+        ach("streak_30", "\uD83D\uDD25", s.streak30, s.streak30Desc, 30, streak, 200),
+        ach("words_50", "\u2B50", s.words50, s.words50Desc, 50, wordsLearned, 50),
+        ach("words_100", "\u2B50", s.words100, s.words100Desc, 100, wordsLearned, 100),
+        ach("words_500", "\u2B50", s.words500, s.words500Desc, 500, wordsLearned, 300),
+        ach("lessons_5", "\uD83D\uDCDA", s.lessons5, s.lessons5Desc, 5, lessonsCompleted, 30),
+        ach("lessons_20", "\uD83D\uDCDA", s.lessons20, s.lessons20Desc, 20, lessonsCompleted, 100),
+        ach("lessons_50", "\uD83D\uDCDA", s.lessons50, s.lessons50Desc, 50, lessonsCompleted, 200),
+        ach("chat_10", "\uD83D\uDCAC", s.chat10, s.chat10Desc, 10, chatMessages, 50),
+        ach("chat_50", "\uD83D\uDCAC", s.chat50, s.chat50Desc, 50, chatMessages, 150),
+        ach("perfect_5", "\uD83C\uDFAF", s.perfect5, s.perfect5Desc, 5, perfectLessons, 100),
+        ach("module_1", "\uD83C\uDFC6", s.module1, s.module1Desc, 1, modulesCompleted, 50),
+        ach("modules_5", "\uD83C\uDFC6", s.modules5, s.modules5Desc, 5, modulesCompleted, 150),
+        ach("modules_10", "\uD83D\uDC51", s.modules10, s.modules10Desc, 10, modulesCompleted, 500),
+        ach("langs_2", "\uD83C\uDF0D", s.langs2, s.langs2Desc, 2, languagesStarted, 100),
     )
 }
 

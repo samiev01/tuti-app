@@ -86,6 +86,10 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import app.tuti.tj.ui.i18n.AppLanguage
+import app.tuti.tj.ui.i18n.LanguageManager
+import app.tuti.tj.ui.i18n.LocalTutiStrings
+import app.tuti.tj.ui.i18n.TutiStrings
 
 // ════════════════════════════════════════════════════════════════
 //  ПРОФИЛЬ
@@ -108,9 +112,11 @@ private data class Stat(val icon: String, val value: String, val label: String)
 private fun formatXp(xp: Int): String =
     if (xp >= 1000) "${xp / 1000},${(xp % 1000).toString().padStart(3, '0')}" else xp.toString()
 
-private fun memberSinceText(createdAt: Long): String {
-    val fmt = SimpleDateFormat("MMMM yyyy", Locale.forLanguageTag("tg"))
-    return "Аз моҳи ${fmt.format(Date(createdAt))} бо Tuti 🦜"
+private fun memberSinceText(createdAt: Long, strings: TutiStrings): String {
+    // Локаль даты идёт следом за языком интерфейса: месяц должен
+    // называться так же, как остальной текст на экране.
+    val fmt = SimpleDateFormat("MMMM yyyy", Locale.forLanguageTag(strings.language.code))
+    return strings.profile.memberSince(fmt.format(Date(createdAt)))
 }
 
 // ═══════════════════════════════════════════════════
@@ -125,21 +131,26 @@ fun ProfileScreen(
 ) {
     val user by repository.getUserFlow().collectAsState(initial = null)
     val u = user ?: UserEntity()
+    val strings = LocalTutiStrings.current
+    val s = strings.profile
 
     val language = if (u.selectedLanguage == "english") "english" else "russian"
-    val learnedWords by repository.getTotalLearnedWords().collectAsState(initial = 0)
+    // Вся статистика профиля — по выбранному языку: очки, серия и слова
+    // русского и английского не перемешиваются.
+    val learnedWords by repository.getLearnedWordsCount(language).collectAsState(initial = 0)
+    val languageStats by repository.getLanguageStats(language).collectAsState(initial = null)
     val completedTopics by repository.getCompletedTopicsCount(language)
         .collectAsState(initial = 0)
     // Уроки курса тоже дарсҳо — раньше в счётчик попадали только свободные темы.
     val completedLessons by repository.getCompletedLessonsCountForLanguageCourse(language)
         .collectAsState(initial = 0)
 
-    val liveStats = remember(u, learnedWords, completedTopics, completedLessons) {
+    val liveStats = remember(u, languageStats, learnedWords, completedTopics, completedLessons, strings) {
         listOf(
-            Stat("🔥", u.currentStreak.toString(), "Рӯзи серия"),
-            Stat("💎", formatXp(u.totalXp), "очки"),
-            Stat("📝", learnedWords.toString(), "Калимаҳо"),
-            Stat("✅", (completedTopics + completedLessons).toString(), "Дарсҳо"),
+            Stat("🔥", (languageStats?.currentStreak ?: 0).toString(), s.streakStat),
+            Stat("💎", formatXp(languageStats?.totalXp ?: 0), strings.common.points),
+            Stat("📝", learnedWords.toString(), s.wordsStat),
+            Stat("✅", (completedTopics + completedLessons).toString(), s.lessonsStat),
         )
     }
 
@@ -161,6 +172,7 @@ fun ProfileScreen(
         ) {
             StatsGrid(stats = liveStats)
             PlusStatusSection(onNavigateToPlus = onNavigateToPlus)
+            LanguageSettingsSection()
             ThemeSettingsSection()
             SoundSettingsSection()
             NotificationSettingsSection()
@@ -182,6 +194,7 @@ private fun AvatarArea(
 ) {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val strings = LocalTutiStrings.current
     val isPlusUser = remember { PlusManager.isPlusActive(context) }
     val daysRemaining = remember { PlusManager.getDaysRemaining(context) }
 
@@ -272,7 +285,7 @@ private fun AvatarArea(
             Spacer(Modifier.height(2.dp))
 
             Text(
-                text = memberSinceText(createdAt),
+                text = memberSinceText(createdAt, strings),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -286,7 +299,7 @@ private fun AvatarArea(
 
             if (fbUser != null) {
                 TutiGhostButton(
-                    text = "Баромадан аз аккаунт",
+                    text = strings.profile.signOut,
                     onClick = { GoogleAuthManager(context).signOut() },
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -323,7 +336,7 @@ private fun AvatarArea(
                             )
                             Spacer(Modifier.width(TutiSpace.sm))
                             Text(
-                                text = "Бо Google ворид шавед",
+                                text = strings.profile.signIn,
                                 style = MaterialTheme.typography.labelLarge,
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -422,6 +435,7 @@ private fun PlusStatusSection(onNavigateToPlus: () -> Unit) {
     val c = MaterialTheme.tutiColors
     val isPlus = remember { PlusManager.isPlusActive(context) }
     val daysRemaining = remember { PlusManager.getDaysRemaining(context) }
+    val s = LocalTutiStrings.current.profile
 
     TutiGradientCard(
         gradient = c.plusGradient,
@@ -435,13 +449,12 @@ private fun PlusStatusSection(onNavigateToPlus: () -> Unit) {
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = if (isPlus) "Tuti Plus фаъол" else "Tuti Plus гиред",
+                    text = if (isPlus) s.plusActive else s.plusGet,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                 )
                 Text(
-                    text = if (isPlus) "$daysRemaining рӯз боқӣ"
-                    else "Дарсҳои бемаҳдуд ва бисёр аз ин зиёд!",
+                    text = if (isPlus) s.plusDaysLeft(daysRemaining) else s.plusPromo,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.9f),
                 )
@@ -452,7 +465,60 @@ private fun PlusStatusSection(onNavigateToPlus: () -> Unit) {
 }
 
 // ═══════════════════════════════════════════════════
-//  4 · ТЕМА
+//  4 · ЯЗЫК ИНТЕРФЕЙСА
+//
+//  Стоит выше темы: язык — первое, что человек хочет
+//  поправить, если приложение заговорило не на его
+//  языке, и искать переключатель в конце списка он
+//  не станет. Раскладка та же, что у выбора темы, —
+//  строка одинаковых плиток с отметкой активной.
+// ═══════════════════════════════════════════════════
+
+@Composable
+private fun LanguageSettingsSection() {
+    val context = LocalContext.current
+    val c = MaterialTheme.tutiColors
+    val current by LanguageManager.language.collectAsState()
+    val s = LocalTutiStrings.current.profile
+
+    TutiSettingsGroup(title = s.languageGroup) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
+        ) {
+            AppLanguage.entries.forEach { language ->
+                val isSelected = current == language
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(TutiRadius.md))
+                        .background(if (isSelected) c.jade.base else c.tileBg)
+                        .clickable {
+                            if (!isSelected) {
+                                TutiSoundManager.playButtonClick()
+                                LanguageManager.setLanguage(context, language)
+                            }
+                        }
+                        .padding(vertical = TutiSpace.md),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(language.flag, fontSize = 18.sp)
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = language.nativeName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isSelected) Color.White
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════
+//  5 · ТЕМА
 // ═══════════════════════════════════════════════════
 
 @Composable
@@ -460,12 +526,13 @@ private fun ThemeSettingsSection() {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
     val themeMode by ThemeManager.themeMode.collectAsState()
+    val s = LocalTutiStrings.current.profile
 
-    TutiSettingsGroup(title = "Мавзӯъ 🎨") {
+    TutiSettingsGroup(title = s.themeGroup) {
         val options = listOf(
-            ThemeMode.SYSTEM to ("📱" to "Системавӣ"),
-            ThemeMode.LIGHT to ("☀️" to "Рӯшан"),
-            ThemeMode.DARK to ("🌙" to "Торик"),
+            ThemeMode.SYSTEM to ("📱" to s.themeSystem),
+            ThemeMode.LIGHT to ("☀️" to s.themeLight),
+            ThemeMode.DARK to ("🌙" to s.themeDark),
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -499,7 +566,7 @@ private fun ThemeSettingsSection() {
 }
 
 // ═══════════════════════════════════════════════════
-//  5 · ЗВУК
+//  6 · ЗВУК
 // ═══════════════════════════════════════════════════
 
 @Composable
@@ -508,11 +575,12 @@ private fun SoundSettingsSection() {
     val c = MaterialTheme.tutiColors
     val scope = rememberCoroutineScope()
     var soundsOn by remember { mutableStateOf(TutiSoundManager.isEnabled()) }
+    val s = LocalTutiStrings.current.profile
 
-    TutiSettingsGroup(title = "Садоҳо 🔊") {
+    TutiSettingsGroup(title = s.soundsGroup) {
         TutiListRow(
-            title = "Садои барнома",
-            subtitle = if (soundsOn) "Садоҳо фаъол ҳастанд" else "Садоҳо хомӯш ҳастанд",
+            title = s.soundsRow,
+            subtitle = if (soundsOn) s.soundsOn else s.soundsOff,
             emoji = if (soundsOn) "🔊" else "🔇",
             tileBackground = c.sky.soft,
             trailing = {
@@ -535,7 +603,7 @@ private fun SoundSettingsSection() {
 }
 
 // ═══════════════════════════════════════════════════
-//  6 · УВЕДОМЛЕНИЯ
+//  7 · УВЕДОМЛЕНИЯ
 // ═══════════════════════════════════════════════════
 
 @Composable
@@ -547,6 +615,7 @@ private fun NotificationSettingsSection() {
     var selectedHour by remember { mutableIntStateOf(prefs.getInt("reminder_hour", 19)) }
     var selectedMinute by remember { mutableIntStateOf(prefs.getInt("reminder_minute", 0)) }
 
+    val s = LocalTutiStrings.current.profile
     val hasPermission = remember { mutableStateOf(hasNotificationPermission(context)) }
     val pendingAction = remember { mutableStateOf<(() -> Unit)?>(null) }
 
@@ -562,7 +631,7 @@ private fun NotificationSettingsSection() {
             prefs.edit().putBoolean("reminders_enabled", false).apply()
             Toast.makeText(
                 context,
-                "Барои ёдоварӣ иҷозати огоҳинома лозим аст",
+                s.permissionNeeded,
                 Toast.LENGTH_LONG,
             ).show()
         }
@@ -573,7 +642,7 @@ private fun NotificationSettingsSection() {
         val timeStr = String.format("%d:%02d", selectedHour, selectedMinute)
         Toast.makeText(
             context,
-            "Ёдоварӣ барои соати $timeStr гузошта шуд 🔔",
+            s.reminderSetAt(timeStr),
             Toast.LENGTH_SHORT,
         ).show()
         val appContext = context.applicationContext
@@ -593,7 +662,7 @@ private fun NotificationSettingsSection() {
         }
     }
 
-    TutiSettingsGroup(title = "Огоҳиномаҳо 🔔") {
+    TutiSettingsGroup(title = s.notificationsGroup) {
         // Баннер разрешения показывается только когда оно нужно —
         // и сразу объясняет, зачем.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasPermission.value) {
@@ -610,18 +679,18 @@ private fun NotificationSettingsSection() {
                 Spacer(Modifier.width(TutiSpace.md))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        text = "Иҷозати огоҳинома",
+                        text = s.permissionTitle,
                         style = MaterialTheme.typography.titleSmall,
                         color = c.mango.onSoft,
                     )
                     Text(
-                        text = "Барои ёдоварӣ иҷозат диҳед",
+                        text = s.permissionSubtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Text(
-                    text = "Иҷозат →",
+                    text = s.permissionAction,
                     style = MaterialTheme.typography.labelMedium,
                     color = c.mango.base,
                 )
@@ -630,8 +699,8 @@ private fun NotificationSettingsSection() {
         }
 
         TutiListRow(
-            title = "Ёдоварии ҳаррӯза",
-            subtitle = "Tuti ба шумо дар бораи омӯзиш ёдоварӣ мекунад",
+            title = s.dailyReminder,
+            subtitle = s.dailyReminderSubtitle,
             emoji = "⏰",
             tileBackground = c.mango.soft,
             trailing = {
@@ -644,7 +713,7 @@ private fun NotificationSettingsSection() {
                             withPermission { scheduleAndConfirm() }
                         } else {
                             NotificationScheduler.cancelAll(context)
-                            Toast.makeText(context, "Ёдоварӣ хомӯш шуд", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, s.reminderOff, Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = SwitchDefaults.colors(
@@ -657,8 +726,8 @@ private fun NotificationSettingsSection() {
 
         if (enabled) {
             TutiListRow(
-                title = "Вақти ёдоварӣ",
-                subtitle = "Ёдоварии бегоҳӣ",
+                title = s.reminderTime,
+                subtitle = s.reminderTimeSubtitle,
                 emoji = "🕐",
                 tileBackground = c.grape.soft,
                 trailing = {
@@ -679,8 +748,7 @@ private fun NotificationSettingsSection() {
                                     NotificationScheduler.rescheduleEvening(context, h, m)
                                     Toast.makeText(
                                         context,
-                                        "Ёдоварӣ барои соати ${String.format("%d:%02d", h, m)} " +
-                                            "гузошта шуд 🔔",
+                                        s.reminderSetAt(String.format("%d:%02d", h, m)),
                                         Toast.LENGTH_SHORT,
                                     ).show()
                                 },
@@ -697,18 +765,19 @@ private fun NotificationSettingsSection() {
 }
 
 // ═══════════════════════════════════════════════════
-//  7 · ПОМОЩЬ
+//  8 · ПОМОЩЬ
 // ═══════════════════════════════════════════════════
 
 @Composable
 private fun HelpSection() {
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
+    val s = LocalTutiStrings.current.profile
 
-    TutiSettingsGroup(title = "Кӯмак 💡") {
+    TutiSettingsGroup(title = s.helpGroup) {
         TutiListRow(
-            title = "Роҳнамои барнома",
-            subtitle = "Ҳамаи маслиҳатҳои Tuti-ро аз нав нишон диҳед",
+            title = s.tipsRow,
+            subtitle = s.tipsSubtitle,
             emoji = "💡",
             tileBackground = c.leaf.soft,
             onClick = {
@@ -719,13 +788,13 @@ private fun HelpSection() {
                     .apply()
                 Toast.makeText(
                     context,
-                    "Роҳнамоҳо аз нав нишон дода мешаванд 💡",
+                    s.tipsRestored,
                     Toast.LENGTH_SHORT,
                 ).show()
             },
             trailing = {
                 Text(
-                    text = "Барқарор →",
+                    text = s.tipsAction,
                     style = MaterialTheme.typography.labelMedium,
                     color = c.jade.base,
                 )
