@@ -149,6 +149,9 @@ object TjFinalStep : FinalStepStrings {
     override val saveWithGoogle = "Бо Google нигоҳ доштан"
     override val help = "Кӯмак"
 
+    override val restoredTitle = "Хуш омадед бозгашт! 🎉"
+    override val restoredMessage = "Пешрафти шумо баргардонида шуд."
+
     override val errorNoNetwork = "Интернет нест. Пайвастро санҷед."
     override val errorPlayServices =
         "Хидматҳои Google дар ин телефон дастрас нестанд."

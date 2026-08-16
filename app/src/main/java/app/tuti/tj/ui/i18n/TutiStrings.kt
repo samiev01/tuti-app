@@ -174,6 +174,10 @@ interface FinalStepStrings {
     /** Единственный выход из тупика, раз кнопки «потом» нет. */
     val help: String
 
+    // Вошли старым аккаунтом после переустановки: прогресс вернулся.
+    val restoredTitle: String
+    val restoredMessage: String
+
     // Причина плюс действие. Кодов ошибок на экране нет: человеку
     // нечего с ними делать, а доверия они не прибавляют.
     val errorNoNetwork: String

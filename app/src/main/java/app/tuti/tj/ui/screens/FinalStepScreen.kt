@@ -33,9 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -49,11 +46,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.tuti.tj.BuildConfig
 import app.tuti.tj.analytics.TutiAnalytics
-import app.tuti.tj.data.auth.AccountLinkStub
 import app.tuti.tj.data.auth.AuthErrorKind
-import app.tuti.tj.data.auth.debugLabel
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.user.LearningGoal
 import app.tuti.tj.data.user.LearningLanguage
@@ -167,30 +161,36 @@ fun FinalStepScreen(
                     ErrorBanner(kind = state.kind)
                 }
 
-                if (BuildConfig.DEBUG) {
+                if (state == FinalStepState.Restored) {
                     Spacer(Modifier.height(TutiSpace.lg))
-                    StubOutcomePicker()
+                    RestoredBanner()
                 }
 
                 Spacer(Modifier.height(TutiSpace.lg))
             }
 
             val errorKind = (state as? FinalStepState.Error)?.kind
+            val restored = state == FinalStepState.Restored
 
             TutiButton(
-                text = when (errorKind) {
+                text = when {
+                    // Прогресс уже вернулся — дальше идти незачем спрашивать.
+                    restored -> strings.common.continueShort
                     // Конфликт аккаунтов — не отказ, а другой путь:
                     // прогресс восстановится, идти надо дальше.
-                    AuthErrorKind.ACCOUNT_CONFLICT -> strings.common.continueShort
-                    null -> s.saveWithGoogle
+                    errorKind == AuthErrorKind.ACCOUNT_CONFLICT -> strings.common.continueShort
+                    errorKind == null -> s.saveWithGoogle
                     else -> strings.common.retry
                 },
                 onClick = {
-                    if (errorKind == AuthErrorKind.ACCOUNT_CONFLICT) onDone() else viewModel.signIn()
+                    when {
+                        restored || errorKind == AuthErrorKind.ACCOUNT_CONFLICT -> onDone()
+                        else -> viewModel.signIn(context.findActivity(), context)
+                    }
                 },
                 loading = state == FinalStepState.Loading,
                 size = TutiButtonSize.Large,
-                trailingEmoji = if (errorKind == null) "🔒" else null,
+                trailingEmoji = if (errorKind == null && !restored) "🔒" else null,
             )
 
             // Выхода «Баъдтар» нет — значит, должен остаться способ
@@ -428,43 +428,31 @@ private fun ErrorBanner(kind: AuthErrorKind) {
     }
 }
 
-// ═══════════════════════════════════════════════════
-//  ОТЛАДОЧНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ЗАГЛУШКИ (уходит в 2B)
-// ═══════════════════════════════════════════════════
-
+/** Вошли старым аккаунтом: прогресс вернулся, тревожиться не о чем. */
 @Composable
-private fun StubOutcomePicker() {
+private fun RestoredBanner() {
     val c = MaterialTheme.tutiColors
-    var selected by remember { mutableStateOf(AccountLinkStub.outcome) }
+    val s = LocalTutiStrings.current.finalStep
+    val shape = RoundedCornerShape(TutiRadius.lg)
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(c.jade.soft)
+            .border(1.dp, c.jade.base.copy(alpha = 0.35f), shape)
+            .padding(TutiSpace.md),
+    ) {
         Text(
-            text = "debug: исход заглушки",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = s.restoredTitle,
+            style = MaterialTheme.typography.titleMedium,
+            color = c.jade.onSoft,
         )
         Spacer(Modifier.height(TutiSpace.xs))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            AccountLinkStub.outcomes.forEach { outcome ->
-                val isActive = outcome == selected
-                Text(
-                    text = outcome.debugLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isActive) c.jade.onSoft else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = 2.dp)
-                        .clip(RoundedCornerShape(TutiRadius.pill))
-                        .background(if (isActive) c.jade.soft else c.tileBg)
-                        .clickable {
-                            AccountLinkStub.outcome = outcome
-                            selected = outcome
-                        }
-                        .padding(horizontal = TutiSpace.sm, vertical = TutiSpace.xs),
-                )
-            }
-        }
+        Text(
+            text = s.restoredMessage,
+            style = MaterialTheme.typography.bodyMedium,
+            color = c.jade.onSoft,
+        )
     }
 }

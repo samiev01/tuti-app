@@ -167,6 +167,9 @@ object RuFinalStep : FinalStepStrings {
     override val saveWithGoogle = "Сохранить через Google"
     override val help = "Помощь"
 
+    override val restoredTitle = "С возвращением! 🎉"
+    override val restoredMessage = "Ваш прогресс восстановлен."
+
     override val errorNoNetwork = "Нет интернета. Проверьте подключение."
     override val errorPlayServices =
         "Сервисы Google недоступны на этом телефоне."

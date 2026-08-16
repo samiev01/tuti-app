@@ -38,9 +38,6 @@ android {
     }
     buildFeatures {
         compose = true
-        // Нужен BuildConfig.DEBUG: заглушка входа на финальном шаге
-        // показывает переключатель исходов только в отладочной сборке.
-        buildConfig = true
     }
 }
 
