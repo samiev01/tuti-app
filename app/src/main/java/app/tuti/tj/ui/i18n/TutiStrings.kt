@@ -22,6 +22,7 @@ interface TutiStrings {
     val common: CommonStrings
     val nav: NavStrings
     val onboarding: OnboardingStrings
+    val finalStep: FinalStepStrings
     val home: HomeStrings
     val lessons: LessonsStrings
     val lessonFlow: LessonFlowStrings
@@ -151,6 +152,34 @@ interface OnboardingStrings {
     val offlineMessage: String
 
     fun minutes(count: Int): String
+}
+
+// ─────────────────────────────────────────────
+//  Финальный шаг онбординга: сводка и вход
+// ─────────────────────────────────────────────
+
+interface FinalStepStrings {
+    /** Не «войдите», а «сохраните»: человек защищает своё, а не выполняет требование. */
+    val subtitle: String
+
+    val summaryTitle: String
+    val labelLanguage: String
+    val labelGoal: String
+    val labelLevel: String
+    val labelCity: String
+    val labelDailyTime: String
+
+    val saveWithGoogle: String
+
+    /** Единственный выход из тупика, раз кнопки «потом» нет. */
+    val help: String
+
+    // Причина плюс действие. Кодов ошибок на экране нет: человеку
+    // нечего с ними делать, а доверия они не прибавляют.
+    val errorNoNetwork: String
+    val errorPlayServices: String
+    val errorAccountConflict: String
+    val errorUnknown: String
 }
 
 // ─────────────────────────────────────────────

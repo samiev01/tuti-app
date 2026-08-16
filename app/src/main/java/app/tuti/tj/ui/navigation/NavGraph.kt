@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import app.tuti.tj.TutiApplication
 import app.tuti.tj.ui.screens.CourseScreen
+import app.tuti.tj.ui.screens.FinalStepScreen
 import app.tuti.tj.ui.screens.FlashcardsScreen
 import app.tuti.tj.ui.screens.ListeningPracticeScreen
 import app.tuti.tj.ui.screens.WritingPracticeScreen
@@ -44,6 +45,14 @@ import kotlinx.coroutines.launch
 
 const val SPLASH_ROUTE = "splash"
 const val ONBOARDING_ROUTE = "onboarding"
+
+/**
+ * Финальный шаг онбординга. Отдельный маршрут, а не последняя
+ * страница онбординга: на него попадают и при перезапуске
+ * приложения, когда все вопросы уже отвечены, а аккаунт всё ещё
+ * анонимный.
+ */
+const val FINAL_STEP_ROUTE = "final_step"
 const val WORD_LEARN_ROUTE = "word_learn/{topicId}"
 const val QUIZ_ROUTE = "quiz/{topicId}"
 const val FLASHCARDS_ROUTE = "flashcards"
@@ -97,8 +106,19 @@ fun NavGraph(
             OnboardingScreen(
                 repository = repo,
                 onComplete = {
-                    navController.navigate(BottomNavItem.Home.route) {
+                    navController.navigate(FINAL_STEP_ROUTE) {
                         popUpTo(ONBOARDING_ROUTE) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(FINAL_STEP_ROUTE) {
+            FinalStepScreen(
+                repository = repo,
+                onDone = {
+                    navController.navigate(BottomNavItem.Home.route) {
+                        popUpTo(FINAL_STEP_ROUTE) { inclusive = true }
                     }
                 },
             )

@@ -81,7 +81,7 @@ import app.tuti.tj.ui.i18n.label
 //  «пастельных» наборов.
 // ════════════════════════════════════════════════════════════════
 
-private enum class StepTone { Jade, Grape, Mango, Leaf, Sky, Amber, Teal }
+private enum class StepTone { Jade, Grape, Mango, Leaf, Sky, Amber }
 
 private val stepTones = listOf(
     StepTone.Jade,   // 0 — знакомство
@@ -90,7 +90,6 @@ private val stepTones = listOf(
     StepTone.Leaf,   // 3 — цель
     StepTone.Sky,    // 4 — время
     StepTone.Amber,  // 5 — город
-    StepTone.Teal,   // 6 — готово
 )
 
 private data class OptionItem(val emoji: String, val label: String, val sublabel: String)
@@ -125,7 +124,12 @@ private fun cityOptions(s: TutiStrings) = CityCatalog.all.map { city ->
     OptionItem(city.emoji, s.cities.name(city.tajikName), city.region.label(s))
 }
 
-private const val TOTAL_PAGES = 7
+/**
+ * Шесть страниц: знакомство и пять вопросов. Поздравление уехало
+ * на отдельный экран — там же, где обязательный вход, и попасть
+ * туда можно не только из онбординга.
+ */
+private const val TOTAL_PAGES = 6
 
 // ═══════════════════════════════════════════════════
 //  ЭКРАН
@@ -164,7 +168,6 @@ fun OnboardingScreen(
         StepTone.Leaf -> c.leaf
         StepTone.Sky -> c.sky
         StepTone.Amber -> c.mango
-        StepTone.Teal -> c.jade
     }
 
     val animAccent by animateColorAsState(accentPair.base, tween(TutiMotion.SLOW), label = "acc")
@@ -265,7 +268,6 @@ fun OnboardingScreen(
                         accent = animAccent,
                         onSelect = viewModel::selectCity,
                     )
-                    6 -> CompletionPage()
                 }
             }
 
@@ -432,25 +434,6 @@ private fun WelcomePage() {
     Spacer(Modifier.height(TutiSpace.lg))
 }
 
-@Composable
-private fun FloatingDecor(emoji: String, xOff: Int, yOff: Int, durationMs: Int) {
-    val inf = rememberInfiniteTransition(label = "decor$emoji")
-    val dy by inf.animateFloat(
-        initialValue = 0f, targetValue = 10f,
-        animationSpec = infiniteRepeatable(
-            tween(durationMs, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-        ),
-        label = "decDy",
-    )
-    Text(
-        text = emoji,
-        fontSize = 22.sp,
-        modifier = Modifier
-            .offset(x = xOff.dp, y = (yOff + dy).dp)
-            .alpha(0.55f),
-    )
-}
-
 // ═══════════════════════════════════════════════════
 //  ШАГИ 1–5 — ВЫБОР
 // ═══════════════════════════════════════════════════
@@ -570,64 +553,3 @@ private fun OptionCard(
     }
 }
 
-// ═══════════════════════════════════════════════════
-//  ШАГ 6 — ГОТОВО
-// ═══════════════════════════════════════════════════
-
-@Composable
-private fun CompletionPage() {
-    val c = MaterialTheme.tutiColors
-    val inf = rememberInfiniteTransition(label = "done")
-    val bounce by inf.animateFloat(
-        initialValue = 0f, targetValue = 14f,
-        animationSpec = infiniteRepeatable(
-            tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-        ),
-        label = "bounce",
-    )
-
-    Spacer(Modifier.height(TutiSpace.xxl))
-
-    Box(
-        modifier = Modifier.fillMaxWidth().height(230.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        FloatingDecor("🎉", -94, -50, 1600)
-        FloatingDecor("⭐", 104, -40, 2000)
-        FloatingDecor("✨", -62, 60, 1800)
-        FloatingDecor("🎉", 84, 70, 2400)
-        FloatingDecor("⭐", -112, 10, 2100)
-
-        Box(
-            modifier = Modifier
-                .size(220.dp)
-                .background(
-                    Brush.radialGradient(
-                        listOf(c.mango.base.copy(alpha = 0.18f), Color.Transparent),
-                    ),
-                ),
-        )
-        Box(modifier = Modifier.offset { IntOffset(0, -bounce.toInt()) }) {
-            LivingTutiMascot(size = 144.dp)
-        }
-    }
-
-    Spacer(Modifier.height(TutiSpace.xl))
-
-    Text(
-        text = LocalTutiStrings.current.onboarding.readyTitle,
-        style = MaterialTheme.typography.displaySmall,
-        color = MaterialTheme.colorScheme.onBackground,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth(),
-    )
-    Spacer(Modifier.height(TutiSpace.md))
-    Text(
-        text = LocalTutiStrings.current.onboarding.readySubtitle,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = TutiSpace.xxl),
-    )
-    Spacer(Modifier.height(TutiSpace.xxxl))
-}

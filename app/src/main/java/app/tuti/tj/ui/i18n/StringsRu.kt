@@ -29,6 +29,7 @@ object RuStrings : TutiStrings {
     override val common = RuCommon
     override val nav = RuNav
     override val onboarding = RuOnboarding
+    override val finalStep = RuFinalStep
     override val home = RuHome
     override val lessons = RuLessons
     override val lessonFlow = RuLessonFlow
@@ -150,6 +151,28 @@ object RuOnboarding : OnboardingStrings {
 
     override fun minutes(count: Int) =
         "$count ${plural(count, "минута", "минуты", "минут")}"
+}
+
+object RuFinalStep : FinalStepStrings {
+    override val subtitle =
+        "Сохраните прогресс — при смене телефона\nвсё останется с вами."
+
+    override val summaryTitle = "Ваш выбор"
+    override val labelLanguage = "Язык"
+    override val labelGoal = "Цель"
+    override val labelLevel = "Уровень"
+    override val labelCity = "Город"
+    override val labelDailyTime = "Каждый день"
+
+    override val saveWithGoogle = "Сохранить через Google"
+    override val help = "Помощь"
+
+    override val errorNoNetwork = "Нет интернета. Проверьте подключение."
+    override val errorPlayServices =
+        "Сервисы Google недоступны на этом телефоне."
+    override val errorAccountConflict =
+        "Этот аккаунт уже используется. Восстанавливаем ваш прогресс."
+    override val errorUnknown = "Не получилось войти. Попробуйте ещё раз."
 }
 
 object RuCities : CityStrings {

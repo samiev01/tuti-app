@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import app.tuti.tj.ui.navigation.BottomNavBar
 import app.tuti.tj.ui.navigation.BottomNavItem
 import app.tuti.tj.ui.navigation.bottomBarRoutes
+import app.tuti.tj.ui.navigation.FINAL_STEP_ROUTE
 import app.tuti.tj.ui.navigation.NavGraph
 import app.tuti.tj.ui.navigation.ONBOARDING_ROUTE
 import app.tuti.tj.data.repository.TutiRepository
@@ -165,11 +166,20 @@ class MainActivity : ComponentActivity() {
             // запуске, в том числе когда приложение открывают в тишине.
             // Звуки остаются там, где они — реакция на действие пользователя.
             val onboardingDone = repo.isOnboardingCompleted()
-            // Отдельного экрана входа больше нет: новый пользователь сразу
-            // попадает в онбординг, а вход через Google предлагается на
-            // его первом шаге.
-            startDestination =
-                if (onboardingDone) BottomNavItem.Home.route else ONBOARDING_ROUTE
+            // Вопросы отвечены, но аккаунт всё ещё анонимный — значит,
+            // человек не дошёл до конца: открываем сразу финальный шаг,
+            // а не главную. Пропустить его нельзя, иначе прогресс так и
+            // останется незащищённым.
+            //
+            // currentUser == null здесь тоже ведёт на финальный шаг:
+            // без аккаунта сохранять некуда, и лучше показать кнопку
+            // входа, чем сделать вид, что всё в порядке.
+            val needsAccount = FirebaseAuth.getInstance().currentUser?.isAnonymous ?: true
+            startDestination = when {
+                !onboardingDone -> ONBOARDING_ROUTE
+                needsAccount -> FINAL_STEP_ROUTE
+                else -> BottomNavItem.Home.route
+            }
 
             if (onboardingDone) {
                 launch { syncProfileToFirestore(repo) }

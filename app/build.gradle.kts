@@ -38,6 +38,9 @@ android {
     }
     buildFeatures {
         compose = true
+        // Нужен BuildConfig.DEBUG: заглушка входа на финальном шаге
+        // показывает переключатель исходов только в отладочной сборке.
+        buildConfig = true
     }
 }
 
@@ -61,6 +64,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.analytics)
     implementation(libs.play.services.auth)
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)

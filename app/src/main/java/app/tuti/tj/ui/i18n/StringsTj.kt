@@ -13,6 +13,7 @@ object TjStrings : TutiStrings {
     override val common = TjCommon
     override val nav = TjNav
     override val onboarding = TjOnboarding
+    override val finalStep = TjFinalStep
     override val home = TjHome
     override val lessons = TjLessons
     override val lessonFlow = TjLessonFlow
@@ -132,6 +133,28 @@ object TjOnboarding : OnboardingStrings {
         "Барои оғоз пайвасти интернет лозим аст.\nҲамагӣ як бор."
 
     override fun minutes(count: Int) = "$count дақиқа"
+}
+
+object TjFinalStep : FinalStepStrings {
+    override val subtitle =
+        "Пешрафти худро нигоҳ доред — ҳангоми иваз кардани телефон\nҳама чиз бо шумо мемонад."
+
+    override val summaryTitle = "Интихоби шумо"
+    override val labelLanguage = "Забон"
+    override val labelGoal = "Ҳадаф"
+    override val labelLevel = "Сатҳ"
+    override val labelCity = "Шаҳр"
+    override val labelDailyTime = "Ҳар рӯз"
+
+    override val saveWithGoogle = "Бо Google нигоҳ доштан"
+    override val help = "Кӯмак"
+
+    override val errorNoNetwork = "Интернет нест. Пайвастро санҷед."
+    override val errorPlayServices =
+        "Хидматҳои Google дар ин телефон дастрас нестанд."
+    override val errorAccountConflict =
+        "Ин аккаунт аллакай истифода мешавад. Пешрафти шуморо бармегардонем."
+    override val errorUnknown = "Ворид шудан нашуд. Дубора кӯшиш кунед."
 }
 
 object TjCities : CityStrings {
