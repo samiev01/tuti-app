@@ -12,9 +12,11 @@ import app.tuti.tj.data.auth.AuthErrorKind
 import app.tuti.tj.data.auth.GoogleIdTokenProvider
 import app.tuti.tj.data.auth.GoogleIdTokenResult
 import app.tuti.tj.data.auth.toAuthErrorKind
+import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.sync.CloudSyncManager
 import app.tuti.tj.data.user.AuthRepository
 import app.tuti.tj.data.user.UserProfileRepository
+import app.tuti.tj.data.user.applyLocally
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -49,7 +51,7 @@ class SignInViewModel : ViewModel() {
     var state by mutableStateOf<SignInState>(SignInState.Idle)
         private set
 
-    fun signIn(activity: Activity, context: Context) {
+    fun signIn(activity: Activity, context: Context, repository: TutiRepository) {
         if (state == SignInState.Loading) return
 
         viewModelScope.launch {
@@ -86,21 +88,33 @@ class SignInViewModel : ViewModel() {
                 .onSuccess { uid ->
                     TutiAnalytics.signInSuccess()
                     AuthRepository.persistProfile(context)
-                    state = resolveDestination(uid, context)
+                    state = resolveDestination(uid, context, repository)
                 }
         }
     }
 
-    private suspend fun resolveDestination(uid: String, context: Context): SignInState {
+    private suspend fun resolveDestination(
+        uid: String,
+        context: Context,
+        repository: TutiRepository,
+    ): SignInState {
         if (!UserProfileRepository.hasProfile(uid)) return SignInState.NeedsOnboarding
 
         // Профиль есть — онбординг человек уже проходил, второй раз
-        // спрашивать нечего. А вот прогресс мог и не выгрузиться:
-        // тогда обещать «всё вернулось» нельзя, просто пускаем на
-        // главную без лишних слов.
+        // спрашивать нечего.
         val restored = runCatching { CloudSyncManager.restoreProgress(context) }
             .getOrDefault(false)
-        return SignInState.Returning(restored)
+        if (restored) return SignInState.Returning(restored = true)
+
+        // Возвращать было нечего: users/{uid}/sync появляется только
+        // после первого урока. Но сами ответы онбординга лежат в
+        // профиле — поднимаем хотя бы их, иначе человек попадёт на
+        // главную без курса и решит, что всё пропало.
+        UserProfileRepository.readOnboarding(uid)?.applyLocally(context, repository)
+
+        // Курс восстановлен, а прогресса не было вовсе — обещать
+        // «всё вернулось» не за что, просто пускаем на главную.
+        return SignInState.Returning(restored = false)
     }
 
     private fun fail(kind: AuthErrorKind): SignInState {

@@ -103,6 +103,7 @@ fun NavGraph(
 
         composable(SIGN_IN_ROUTE) {
             SignInScreen(
+                repository = repo,
                 onNeedsOnboarding = {
                     navController.navigate(ONBOARDING_ROUTE) {
                         popUpTo(SIGN_IN_ROUTE) { inclusive = true }

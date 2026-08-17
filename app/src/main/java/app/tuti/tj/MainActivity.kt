@@ -31,6 +31,7 @@ import app.tuti.tj.data.remote.FirestoreManager
 import app.tuti.tj.data.sync.CloudSyncManager
 import app.tuti.tj.data.user.AuthRepository
 import app.tuti.tj.data.user.UserProfileRepository
+import app.tuti.tj.data.user.applyLocally
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -161,7 +162,7 @@ class MainActivity : ComponentActivity() {
                 // а Tuti на нём человек ещё не открывал. Сеть здесь
                 // ограничена таймаутом, иначе заставка висела бы вечно.
                 hasCloudProfile(uid) -> {
-                    runCatching { CloudSyncManager.restoreProgress(this@MainActivity) }
+                    restoreFromCloud(uid, repo)
                     BottomNavItem.Home.route
                 }
 
@@ -178,6 +179,20 @@ class MainActivity : ComponentActivity() {
         withTimeoutOrNull(PROFILE_CHECK_TIMEOUT_MS) {
             UserProfileRepository.hasProfile(uid)
         } ?: false
+
+    /**
+     * Прогресс живёт в users/{uid}/sync, а тот документ появляется
+     * только после первого урока. Если возвращать нечего, поднимаем
+     * хотя бы ответы онбординга из самого профиля — иначе главная
+     * откроется без курса.
+     */
+    private suspend fun restoreFromCloud(uid: String, repo: TutiRepository) {
+        val restored = runCatching { CloudSyncManager.restoreProgress(this) }
+            .getOrDefault(false)
+        if (restored) return
+
+        UserProfileRepository.readOnboarding(uid)?.applyLocally(this, repo)
+    }
 
     private suspend fun syncProfileToFirestore(repo: TutiRepository) {
         runCatching {

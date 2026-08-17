@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.tuti.tj.analytics.TutiAnalytics
 import app.tuti.tj.data.auth.AuthErrorKind
+import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.ui.components.GreetingOrbit
 import app.tuti.tj.ui.components.findActivity
 import app.tuti.tj.ui.components.kit.TutiButton
@@ -72,6 +73,7 @@ private const val SUPPORT_TELEGRAM_URL = "https://t.me/tutitj"
 
 @Composable
 fun SignInScreen(
+    repository: TutiRepository,
     onNeedsOnboarding: () -> Unit,
     onRestored: () -> Unit,
     viewModel: SignInViewModel = viewModel(),
@@ -188,7 +190,9 @@ fun SignInScreen(
 
                 else -> GoogleSignInButton(
                     isLoading = state == SignInState.Loading,
-                    onClick = { viewModel.signIn(context.findActivity(), context) },
+                    onClick = {
+                        viewModel.signIn(context.findActivity(), context, repository)
+                    },
                 )
             }
 

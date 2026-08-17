@@ -14,8 +14,7 @@ import app.tuti.tj.data.user.LearningLanguage
 import app.tuti.tj.data.user.OnboardingProfile
 import app.tuti.tj.data.user.ProficiencyLevel
 import app.tuti.tj.data.user.UserProfileRepository
-import app.tuti.tj.data.user.courseIdFor
-import app.tuti.tj.data.user.dbValue
+import app.tuti.tj.data.user.applyLocally
 import app.tuti.tj.notifications.NotificationScheduler
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -80,26 +79,8 @@ class OnboardingViewModel : ViewModel() {
     suspend fun complete(context: Context, repository: TutiRepository) {
         val profile = profile()
         val city = CityCatalog.byCode(profile.cityCode)
-        val courseId = courseIdFor(profile.goal, profile.language)
 
-        runCatching {
-            repository.saveOnboardingData(
-                language = profile.language.dbValue,
-                level = profile.level.dbValue,
-                goal = profile.goal.dbValue,
-                dailyMinutes = profile.dailyMinutes,
-                courseId = courseId,
-            )
-            repository.initCourseProgress(courseId)
-        }
-
-        context.getSharedPreferences("tuti_prefs", Context.MODE_PRIVATE)
-            .edit()
-            // Лидерборд по-прежнему группирует по таджикскому названию,
-            // код лежит рядом — на него перейдут вместе с рейтингом.
-            .putString("user_city", city.tajikName)
-            .putString("user_city_code", city.code)
-            .apply()
+        profile.applyLocally(context, repository)
 
         // Без сети set() встаёт в локальную очередь Firestore и await()
         // не возвращается вовсе. Держать на этом человека нельзя:
