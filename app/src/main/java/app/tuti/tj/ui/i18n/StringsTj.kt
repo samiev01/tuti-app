@@ -468,10 +468,6 @@ object TjPlus : PlusStrings {
     override val benefitModules = "Ҳамаи модулҳо кушода"
     override val benefitNoAds = "Бе реклама"
 
-    override val monthly = "Моҳона"
-    override val yearly = "Солона"
-    override val currency = "сомонӣ"
-
     override val contactUs = "Бо мо тамос гиред"
 
     override val promoTitle = "Промокод"
@@ -540,7 +536,7 @@ object TjTooltips : TooltipStrings {
     override val xp = "Ин баллҳои шумо ва пешрафт то ҳадафи навбатӣ! 💎"
     override val streak = "Серияи ҳафтаина! Ҳар рӯз хонед ва серияро нигоҳ доред! 🔥"
     override val course = "Курси асосии шумо! Барои оғоз ё давом пахш кунед! 👆"
-    override val topics = "Мавзӯъҳои ройгон! Бе пардохт калимаҳо омӯзед! 🎉"
+    override val topics = "Мавзӯъҳои ройгон! Ҳозир ҳам омӯхтанро оғоз кунед! 🎉"
     override val practice = "Дар бахши Машқ бо Tuti гап занед ва корти калимаҳо омӯзед! 🦜"
     override val finish = "Офарин! Шумо тайёред! Биёед забон омӯзем! 🚀"
     override val skip = "Гузаштан"

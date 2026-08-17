@@ -515,10 +515,6 @@ object RuPlus : PlusStrings {
     override val benefitModules = "Все модули открыты"
     override val benefitNoAds = "Без рекламы"
 
-    override val monthly = "На месяц"
-    override val yearly = "На год"
-    override val currency = "сомони"
-
     override val contactUs = "Свяжитесь с нами"
 
     override val promoTitle = "Промокод"
@@ -590,7 +586,7 @@ object RuTooltips : TooltipStrings {
     override val xp = "Это ваши баллы и прогресс до следующей цели! 💎"
     override val streak = "Серия за неделю! Занимайтесь каждый день и держите её! 🔥"
     override val course = "Ваш основной курс! Нажмите, чтобы начать или продолжить! 👆"
-    override val topics = "Бесплатные темы! Учите слова без оплаты! 🎉"
+    override val topics = "Бесплатные темы! Начните учить слова прямо сейчас! 🎉"
     override val practice = "В разделе «Практика» поговорите с Tuti и учите карточки! 🦜"
     override val finish = "Отлично! Вы готовы! Давайте учить язык! 🚀"
     override val skip = "Пропустить"

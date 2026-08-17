@@ -1,9 +1,6 @@
 package app.tuti.tj.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.tuti.tj.audio.TutiSoundManager
@@ -99,28 +95,6 @@ fun PaywallDialog(
             }
         }
 
-        Spacer(Modifier.height(TutiSpace.md))
-
-        // Тарифы
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(TutiSpace.sm),
-        ) {
-            PriceTile(
-                label = s.monthly,
-                price = "29",
-                highlighted = false,
-                modifier = Modifier.weight(1f),
-            )
-            PriceTile(
-                label = s.yearly,
-                price = "149",
-                badge = "-57%",
-                highlighted = true,
-                modifier = Modifier.weight(1f),
-            )
-        }
-
         TutiDialogActions(
             primaryText = s.paywallPrimary,
             onPrimary = onGetPlus,
@@ -129,68 +103,5 @@ fun PaywallDialog(
             tone = TutiButtonTone.Mango,
             gradient = c.plusGradient,
         )
-    }
-}
-
-@Composable
-private fun PriceTile(
-    label: String,
-    price: String,
-    highlighted: Boolean,
-    modifier: Modifier = Modifier,
-    badge: String? = null,
-) {
-    val c = MaterialTheme.tutiColors
-    val shape = RoundedCornerShape(TutiRadius.md)
-
-    Box(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape)
-                .background(if (highlighted) c.mango.soft else MaterialTheme.colorScheme.surface)
-                .border(
-                    width = if (highlighted) 2.dp else 1.dp,
-                    color = if (highlighted) c.mango.base else c.cardBorder,
-                    shape = shape,
-                )
-                .padding(vertical = TutiSpace.md),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = if (highlighted) c.mango.onSoft
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = price,
-                style = MaterialTheme.typography.displaySmall,
-                fontSize = 22.sp,
-                color = if (highlighted) c.mango.base else MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = LocalTutiStrings.current.plus.currency,
-                style = MaterialTheme.typography.labelSmall,
-                fontSize = 9.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (badge != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .clip(RoundedCornerShape(bottomStart = TutiRadius.sm, topEnd = TutiRadius.md))
-                    .background(c.mango.base)
-                    .padding(horizontal = 7.dp, vertical = 2.dp),
-            ) {
-                Text(
-                    text = badge,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 9.sp,
-                    color = Color.White,
-                )
-            }
-        }
     }
 }
