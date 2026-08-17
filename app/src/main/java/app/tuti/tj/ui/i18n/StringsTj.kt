@@ -48,7 +48,7 @@ object TjCommon : CommonStrings {
     override val result = "Натиҷа"
     override val exit = "Баромадан"
     override val cancel = "Бекор кардан"
-    override val points = "очки"
+    override val points = "балл"
     override val stars = "ситора"
     override val accuracy = "дақиқӣ"
     override val lessonsLabel = "Дарсҳо"
@@ -63,7 +63,7 @@ object TjCommon : CommonStrings {
     override val resultGood = "Хуб! 👍"
     override val resultTryHarder = "Кӯшиш кунед! 💪"
 
-    override fun xp(amount: Int) = "+$amount очки"
+    override fun xp(amount: Int) = "+$amount балл"
     override fun correctAnswer(answer: String) = "Ҷавоби дуруст: $answer"
     override fun ofCount(current: Int, total: Int) = "$current аз $total"
 }
@@ -453,7 +453,7 @@ object TjLeaderboard : LeaderboardStrings {
     override val motivation = "Имрӯз як дарс хонед ва боло равед! 💪"
 
     override fun toNextRank(rank: Int, diff: Int) =
-        "⚡ То ҷойгоҳи $rank ҳамагӣ $diff очки монд!"
+        "⚡ То ҷойгоҳи $rank ҳамагӣ $diff балл монд!"
 }
 
 object TjPlus : PlusStrings {
@@ -545,7 +545,7 @@ object TjNotifications : NotificationStrings {
 }
 
 object TjTooltips : TooltipStrings {
-    override val xp = "Ин очкоҳои шумо ва пешрафт то ҳадафи навбатӣ! 💎"
+    override val xp = "Ин баллҳои шумо ва пешрафт то ҳадафи навбатӣ! 💎"
     override val streak = "Серияи ҳафтаина! Ҳар рӯз хонед ва серияро нигоҳ доред! 🔥"
     override val course = "Курси асосии шумо! Барои оғоз ё давом пахш кунед! 👆"
     override val topics = "Мавзӯъҳои ройгон! Бе пардохт калимаҳо омӯзед! 🎉"

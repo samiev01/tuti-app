@@ -64,7 +64,7 @@ object RuCommon : CommonStrings {
     override val result = "Итог"
     override val exit = "Выйти"
     override val cancel = "Отмена"
-    override val points = "очки"
+    override val points = "баллы"
     override val stars = "звёзды"
     override val accuracy = "точность"
     override val lessonsLabel = "Уроки"
@@ -80,7 +80,7 @@ object RuCommon : CommonStrings {
     override val resultTryHarder = "Ещё немного! 💪"
 
     override fun xp(amount: Int) =
-        "+$amount ${plural(amount, "очко", "очка", "очков")}"
+        "+$amount ${plural(amount, "балл", "балла", "баллов")}"
     override fun correctAnswer(answer: String) = "Правильный ответ: $answer"
     override fun ofCount(current: Int, total: Int) = "$current из $total"
 }
@@ -500,7 +500,7 @@ object RuLeaderboard : LeaderboardStrings {
     override val motivation = "Пройдите урок сегодня и поднимитесь выше! 💪"
 
     override fun toNextRank(rank: Int, diff: Int) =
-        "⚡ До $rank места осталось всего $diff ${plural(diff, "очко", "очка", "очков")}!"
+        "⚡ До $rank места осталось всего $diff ${plural(diff, "балл", "балла", "баллов")}!"
 }
 
 object RuPlus : PlusStrings {
@@ -595,7 +595,7 @@ object RuNotifications : NotificationStrings {
 }
 
 object RuTooltips : TooltipStrings {
-    override val xp = "Это ваши очки и прогресс до следующей цели! 💎"
+    override val xp = "Это ваши баллы и прогресс до следующей цели! 💎"
     override val streak = "Серия за неделю! Занимайтесь каждый день и держите её! 🔥"
     override val course = "Ваш основной курс! Нажмите, чтобы начать или продолжить! 👆"
     override val topics = "Бесплатные темы! Учите слова без оплаты! 🎉"
