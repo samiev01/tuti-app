@@ -173,10 +173,18 @@ fun ProfileScreen(
             StatsGrid(stats = liveStats)
             PlusStatusSection(onNavigateToPlus = onNavigateToPlus)
             LanguageSettingsSection()
-            ThemeSettingsSection()
-            SoundSettingsSection()
-            NotificationSettingsSection()
-            HelpSection()
+
+            // Настройки идут одним плотным столбцом: большой разрыв
+            // нужен только перед заголовком, чтобы оторвать его от
+            // предыдущей карточки. Между самими карточками такая
+            // пустота читается как пропущенный кусок экрана.
+            Column(verticalArrangement = Arrangement.spacedBy(TutiSpace.sm)) {
+                ThemeSettingsSection()
+                SoundSettingsSection()
+                NotificationSettingsSection()
+                HelpSection()
+            }
+
             Spacer(Modifier.height(TutiSpace.bottomNavGap))
         }
     }
@@ -577,7 +585,8 @@ private fun SoundSettingsSection() {
     var soundsOn by remember { mutableStateOf(TutiSoundManager.isEnabled()) }
     val s = LocalTutiStrings.current.profile
 
-    TutiSettingsGroup(title = s.soundsGroup) {
+    // Заголовка нет: строка «Садои барнома» называет себя сама.
+    TutiSettingsGroup {
         TutiListRow(
             title = s.soundsRow,
             subtitle = if (soundsOn) s.soundsOn else s.soundsOff,
@@ -662,7 +671,7 @@ private fun NotificationSettingsSection() {
         }
     }
 
-    TutiSettingsGroup(title = s.notificationsGroup) {
+    TutiSettingsGroup {
         // Баннер разрешения показывается только когда оно нужно —
         // и сразу объясняет, зачем.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasPermission.value) {
@@ -774,7 +783,7 @@ private fun HelpSection() {
     val c = MaterialTheme.tutiColors
     val s = LocalTutiStrings.current.profile
 
-    TutiSettingsGroup(title = s.helpGroup) {
+    TutiSettingsGroup {
         TutiListRow(
             title = s.tipsRow,
             subtitle = s.tipsSubtitle,

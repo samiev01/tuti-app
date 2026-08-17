@@ -364,20 +364,29 @@ fun TutiListRow(
     }
 }
 
-/** Группа настроек: подпись сверху и карточка со строками. */
+/**
+ * Группа настроек: карточка со строками и подпись над ней.
+ *
+ * [title] можно не задавать. Подпись нужна там, где карточка сама
+ * себя не объясняет — например, ряд плиток выбора темы. Там, где
+ * строки названы полными фразами, заголовок повторял бы их
+ * своими словами и только удлинял экран.
+ */
 @Composable
 fun TutiSettingsGroup(
-    title: String,
     modifier: Modifier = Modifier,
+    title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(Modifier.height(TutiSpace.md))
+        if (title != null) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Spacer(Modifier.height(TutiSpace.md))
+        }
         TutiCard(
             modifier = Modifier.fillMaxWidth(),
             content = {

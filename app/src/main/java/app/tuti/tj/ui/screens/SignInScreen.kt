@@ -2,6 +2,7 @@ package app.tuti.tj.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,8 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.tuti.tj.R
 import app.tuti.tj.analytics.TutiAnalytics
 import app.tuti.tj.data.auth.AuthErrorKind
 import app.tuti.tj.data.repository.TutiRepository
@@ -325,18 +327,12 @@ private fun GoogleSignInButton(
                     )
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "G",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Black,
-                            style = TextStyle(
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        Color(0xFF4285F4), Color(0xFF34A853),
-                                        Color(0xFFFBBC05), Color(0xFFEA4335),
-                                    ),
-                                ),
-                            ),
+                        // Фирменный знак, а не буква: цвета заданы самим
+                        // ресурсом и в тему не перекрашиваются.
+                        Image(
+                            painter = painterResource(R.drawable.ic_google_logo),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
                         )
                         Spacer(Modifier.width(TutiSpace.md))
                         Text(
