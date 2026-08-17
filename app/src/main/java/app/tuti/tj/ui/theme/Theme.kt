@@ -124,8 +124,10 @@ private fun lightColors() = TutiExtendedColors(
     lockedBg = Color(0xFFF1F5F8),
     lockedBorder = Ink20,
     lockedContent = Ink40,
-    progressTrack = Color(0xFFE6EDF2),
-    tileBg = Color(0xFFF6F9FB),
+    // Дорожка прогресса живёт на белой карточке, поэтому темнеет
+    // вместе с фоном — иначе на ней перестаёт быть видно пустую часть.
+    progressTrack = Color(0xFFDDE5EC),
+    tileBg = Color(0xFFF1F5F8),
 
     practiceBg1 = JadeMist,
     practiceBg2 = SkySoft,
@@ -213,7 +215,7 @@ private val TutiLightColorScheme = lightColorScheme(
     onBackground = Ink,
     surface = Snow,
     onSurface = Ink,
-    surfaceVariant = Color(0xFFF1F5F8),
+    surfaceVariant = Color(0xFFE2E9EF),
     onSurfaceVariant = Ink70,
     error = Coral,
     onError = Snow,
