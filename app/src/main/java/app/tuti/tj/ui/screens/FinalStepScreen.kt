@@ -65,19 +65,13 @@ import app.tuti.tj.ui.theme.tutiColors
 // ════════════════════════════════════════════════════════════════
 //  ФИНАЛЬНЫЙ ШАГ ОНБОРДИНГА
 //
-//  Кнопки «потом» здесь нет — и именно поэтому экран почти целиком
-//  состоит из обработки отказов. Сначала человек видит, что он уже
-//  вложил: язык, цель, уровень, город, время. Сохранять своё хочется
-//  сильнее, чем абстрактный «прогресс».
+//  Вход остался на первом экране приложения, здесь его больше нет.
+//  Человек видит, что он выбрал — язык, цель, уровень, город,
+//  время, — и уходит на главную.
 //
-//  Системная кнопка «назад» сворачивает приложение: пропускать этот
-//  шаг нельзя, но и запирать человека в экране без выхода тоже.
-//  Плюс ссылка «Кӯмак» в тех состояниях, где он сам ничего сделать
-//  не может.
+//  «Назад» сворачивает приложение: профиль уже сохранён, и
+//  возвращаться в вопросы, чтобы записать его второй раз, незачем.
 // ════════════════════════════════════════════════════════════════
-
-/** TODO: заменить на настоящий канал поддержки. */
-private const val SUPPORT_TELEGRAM_URL = "https://t.me/tutitj"
 
 @Composable
 fun FinalStepScreen(
@@ -89,20 +83,10 @@ fun FinalStepScreen(
     val context = LocalContext.current
     val strings = LocalTutiStrings.current
     val s = strings.finalStep
-    val state = viewModel.state
     val summary = viewModel.summary
 
-    LaunchedEffect(Unit) {
-        TutiAnalytics.finalStepShown()
-        viewModel.load(context, repository)
-    }
+    LaunchedEffect(Unit) { viewModel.load(context, repository) }
 
-    LaunchedEffect(state) {
-        if (state is FinalStepState.Success) onDone()
-    }
-
-    // Пропустить шаг нельзя, поэтому «назад» не уводит на главную,
-    // а сворачивает приложение — как с домашнего экрана.
     BackHandler { context.findActivity().moveTaskToBack(true) }
 
     Box(
@@ -156,71 +140,16 @@ fun FinalStepScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                if (state is FinalStepState.Error) {
-                    Spacer(Modifier.height(TutiSpace.lg))
-                    ErrorBanner(kind = state.kind)
-                }
-
-                if (state == FinalStepState.Restored) {
-                    Spacer(Modifier.height(TutiSpace.lg))
-                    RestoredBanner()
-                }
-
                 Spacer(Modifier.height(TutiSpace.lg))
             }
 
-            val errorKind = (state as? FinalStepState.Error)?.kind
-            val restored = state == FinalStepState.Restored
-
             TutiButton(
-                text = when {
-                    // Прогресс уже вернулся — дальше идти незачем спрашивать.
-                    restored -> strings.common.continueShort
-                    // Конфликт аккаунтов — не отказ, а другой путь:
-                    // прогресс восстановится, идти надо дальше.
-                    errorKind == AuthErrorKind.ACCOUNT_CONFLICT -> strings.common.continueShort
-                    errorKind == null -> s.saveWithGoogle
-                    else -> strings.common.retry
-                },
-                onClick = {
-                    when {
-                        restored || errorKind == AuthErrorKind.ACCOUNT_CONFLICT -> onDone()
-                        else -> viewModel.signIn(context.findActivity(), context)
-                    }
-                },
-                loading = state == FinalStepState.Loading,
+                text = strings.common.startAction,
+                onClick = onDone,
                 size = TutiButtonSize.Large,
-                trailingEmoji = if (errorKind == null && !restored) "🔒" else null,
+                trailingEmoji = "🚀",
             )
-
-            // Выхода «Баъдтар» нет — значит, должен остаться способ
-            // дотянуться до нас. Иначе человек просто удалит приложение,
-            // и мы никогда не узнаем, почему.
-            if (errorKind == AuthErrorKind.PLAY_SERVICES || errorKind == AuthErrorKind.UNKNOWN) {
-                Spacer(Modifier.height(TutiSpace.md))
-                Text(
-                    text = s.help,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = c.jade.base,
-                    textDecoration = TextDecoration.Underline,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(TutiRadius.sm))
-                        .clickable { context.openSupportChat() }
-                        .padding(vertical = TutiSpace.sm),
-                )
-            }
         }
-    }
-}
-
-private fun android.content.Context.openSupportChat() {
-    runCatching {
-        startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_TELEGRAM_URL))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-        )
     }
 }
 
@@ -389,70 +318,3 @@ private fun SummaryRow(emoji: String, label: String, value: String) {
     }
 }
 
-// ═══════════════════════════════════════════════════
-//  ОШИБКА
-// ═══════════════════════════════════════════════════
-
-@Composable
-private fun ErrorBanner(kind: AuthErrorKind) {
-    val c = MaterialTheme.tutiColors
-    val s = LocalTutiStrings.current.finalStep
-    val shape = RoundedCornerShape(TutiRadius.lg)
-
-    // Конфликт аккаунтов ничего не сломал — это спокойное сообщение,
-    // а не отказ, поэтому и цвет у него не тревожный.
-    val calm = kind == AuthErrorKind.ACCOUNT_CONFLICT
-    val tone = if (calm) c.jade else c.mango
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(tone.soft)
-            .border(1.dp, tone.base.copy(alpha = 0.35f), shape)
-            .padding(TutiSpace.md),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = if (calm) "ℹ️" else "⚠️", fontSize = 18.sp)
-        Spacer(Modifier.width(TutiSpace.sm))
-        Text(
-            text = when (kind) {
-                AuthErrorKind.NO_NETWORK -> s.errorNoNetwork
-                AuthErrorKind.PLAY_SERVICES -> s.errorPlayServices
-                AuthErrorKind.ACCOUNT_CONFLICT -> s.errorAccountConflict
-                AuthErrorKind.UNKNOWN -> s.errorUnknown
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = tone.onSoft,
-        )
-    }
-}
-
-/** Вошли старым аккаунтом: прогресс вернулся, тревожиться не о чем. */
-@Composable
-private fun RestoredBanner() {
-    val c = MaterialTheme.tutiColors
-    val s = LocalTutiStrings.current.finalStep
-    val shape = RoundedCornerShape(TutiRadius.lg)
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(c.jade.soft)
-            .border(1.dp, c.jade.base.copy(alpha = 0.35f), shape)
-            .padding(TutiSpace.md),
-    ) {
-        Text(
-            text = s.restoredTitle,
-            style = MaterialTheme.typography.titleMedium,
-            color = c.jade.onSoft,
-        )
-        Spacer(Modifier.height(TutiSpace.xs))
-        Text(
-            text = s.restoredMessage,
-            style = MaterialTheme.typography.bodyMedium,
-            color = c.jade.onSoft,
-        )
-    }
-}

@@ -43,8 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -52,13 +50,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.user.CityCatalog
-import app.tuti.tj.ui.components.GreetingOrbit
 import app.tuti.tj.ui.components.LivingTutiMascot
 import app.tuti.tj.ui.components.kit.TutiButton
 import app.tuti.tj.ui.components.kit.TutiButtonSize
 import app.tuti.tj.ui.components.kit.TutiIconTile
 import app.tuti.tj.ui.theme.LocalDarkTheme
-import app.tuti.tj.ui.theme.TutiLogoFamily
 import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSize
@@ -81,15 +77,14 @@ import app.tuti.tj.ui.i18n.label
 //  «пастельных» наборов.
 // ════════════════════════════════════════════════════════════════
 
-private enum class StepTone { Jade, Grape, Mango, Leaf, Sky, Amber }
+private enum class StepTone { Grape, Mango, Leaf, Sky, Amber }
 
 private val stepTones = listOf(
-    StepTone.Jade,   // 0 — знакомство
-    StepTone.Grape,  // 1 — язык
-    StepTone.Mango,  // 2 — уровень
-    StepTone.Leaf,   // 3 — цель
-    StepTone.Sky,    // 4 — время
-    StepTone.Amber,  // 5 — город
+    StepTone.Grape,  // 0 — язык
+    StepTone.Mango,  // 1 — уровень
+    StepTone.Leaf,   // 2 — цель
+    StepTone.Sky,    // 3 — время
+    StepTone.Amber,  // 4 — город
 )
 
 private data class OptionItem(val emoji: String, val label: String, val sublabel: String)
@@ -125,11 +120,11 @@ private fun cityOptions(s: TutiStrings) = CityCatalog.all.map { city ->
 }
 
 /**
- * Шесть страниц: знакомство и пять вопросов. Поздравление уехало
- * на отдельный экран — там же, где обязательный вход, и попасть
- * туда можно не только из онбординга.
+ * Пять страниц — ровно пять вопросов. Страницы знакомства здесь
+ * больше нет: логотип, приветствия и маскота человек только что
+ * видел на экране входа, показывать их второй раз незачем.
  */
-private const val TOTAL_PAGES = 6
+private const val TOTAL_PAGES = 5
 
 // ═══════════════════════════════════════════════════
 //  ЭКРАН
@@ -162,7 +157,6 @@ fun OnboardingScreen(
 
     // Акцент шага берётся из палитры дизайн-системы
     val accentPair = when (stepTones[page.coerceIn(stepTones.indices)]) {
-        StepTone.Jade -> c.jade
         StepTone.Grape -> c.grape
         StepTone.Mango -> c.mango
         StepTone.Leaf -> c.leaf
@@ -182,17 +176,17 @@ fun OnboardingScreen(
     val bgBottom = MaterialTheme.colorScheme.background
 
     val canAdvance = when (page) {
-        0 -> true
-        1 -> langIdx != null
-        2 -> levelIdx != null
-        3 -> goalIdx != null
-        4 -> timeIdx != null
-        5 -> cityIdx != null
+        0 -> langIdx != null
+        1 -> levelIdx != null
+        2 -> goalIdx != null
+        3 -> timeIdx != null
+        4 -> cityIdx != null
         else -> true
     }
 
     // Подзаголовок шага «уровень» зависит от выбранного языка —
     // вопрос должен звучать про конкретный язык, а не абстрактно.
+    // Индекс 1 — английский, порядок задан LearningLanguage.entries.
     val levelSubtitle = if (langIdx == 1) s.levelSubtitleEnglish else s.levelSubtitleRussian
 
     Box(
@@ -227,8 +221,7 @@ fun OnboardingScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 when (page) {
-                    0 -> WelcomePage()
-                    1 -> SelectionPage(
+                    0 -> SelectionPage(
                         title = s.languageTitle,
                         subtitle = s.languageSubtitle,
                         options = languageOptions(s),
@@ -236,7 +229,7 @@ fun OnboardingScreen(
                         accent = animAccent,
                         onSelect = viewModel::selectLanguage,
                     )
-                    2 -> SelectionPage(
+                    1 -> SelectionPage(
                         title = s.levelTitle,
                         subtitle = levelSubtitle,
                         options = levelOptions(s),
@@ -244,7 +237,7 @@ fun OnboardingScreen(
                         accent = animAccent,
                         onSelect = viewModel::selectLevel,
                     )
-                    3 -> SelectionPage(
+                    2 -> SelectionPage(
                         title = s.goalTitle,
                         subtitle = s.goalSubtitle,
                         options = goalOptions(s),
@@ -252,7 +245,7 @@ fun OnboardingScreen(
                         accent = animAccent,
                         onSelect = viewModel::selectGoal,
                     )
-                    4 -> SelectionPage(
+                    3 -> SelectionPage(
                         title = s.timeTitle,
                         subtitle = s.timeSubtitle,
                         options = timeOptions(s),
@@ -260,7 +253,7 @@ fun OnboardingScreen(
                         accent = animAccent,
                         onSelect = viewModel::selectTime,
                     )
-                    5 -> SelectionPage(
+                    4 -> SelectionPage(
                         title = s.cityTitle,
                         subtitle = s.citySubtitle,
                         options = cityOptions(strings),
@@ -338,7 +331,7 @@ private fun TopRow(
 
         Spacer(Modifier.weight(1f))
 
-        if (page in 1 until TOTAL_PAGES - 1) {
+        if (page < TOTAL_PAGES - 1) {
             Text(
                 text = LocalTutiStrings.current.common.skipArrow,
                 style = MaterialTheme.typography.labelMedium,
@@ -394,48 +387,7 @@ private fun ProgressDots(current: Int, accent: Color) {
 }
 
 // ═══════════════════════════════════════════════════
-//  ШАГ 0 — ЗНАКОМСТВО
-// ═══════════════════════════════════════════════════
-
-@Composable
-private fun WelcomePage() {
-    val c = MaterialTheme.tutiColors
-
-    Spacer(Modifier.height(TutiSpace.lg))
-
-    // Логотип на первом шаге — это точка входа в приложение,
-    // здесь бренд должен быть назван, а не только показан маскотом.
-    Text(
-        text = "Tuti",
-        style = TextStyle(
-            fontFamily = TutiLogoFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 56.sp,
-            letterSpacing = 0.sp,
-            brush = Brush.verticalGradient(listOf(c.jade.base, c.jade.deep)),
-        ),
-    )
-
-    Spacer(Modifier.height(TutiSpace.xs))
-
-    Text(
-        text = LocalTutiStrings.current.onboarding.tagline,
-        style = MaterialTheme.typography.bodyLarge,
-        color = c.jade.onSoft,
-        textAlign = TextAlign.Center,
-    )
-
-    Spacer(Modifier.height(TutiSpace.lg))
-
-    // Витрина языков: четыре приветствия вокруг маскота. Языков
-    // больше, чем курсов, — это заявка на будущий набор.
-    GreetingOrbit(stageHeight = 300.dp, mascotSize = 118.dp)
-
-    Spacer(Modifier.height(TutiSpace.lg))
-}
-
-// ═══════════════════════════════════════════════════
-//  ШАГИ 1–5 — ВЫБОР
+//  ВОПРОСЫ
 // ═══════════════════════════════════════════════════
 
 @Composable

@@ -23,36 +23,35 @@ import androidx.navigation.compose.rememberNavController
 import app.tuti.tj.ui.navigation.BottomNavBar
 import app.tuti.tj.ui.navigation.BottomNavItem
 import app.tuti.tj.ui.navigation.bottomBarRoutes
-import app.tuti.tj.ui.navigation.FINAL_STEP_ROUTE
 import app.tuti.tj.ui.navigation.NavGraph
 import app.tuti.tj.ui.navigation.ONBOARDING_ROUTE
+import app.tuti.tj.ui.navigation.SIGN_IN_ROUTE
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.remote.FirestoreManager
+import app.tuti.tj.data.sync.CloudSyncManager
 import app.tuti.tj.data.user.AuthRepository
+import app.tuti.tj.data.user.UserProfileRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import app.tuti.tj.ui.i18n.LanguageManager
 import app.tuti.tj.ui.i18n.ProvideTutiStrings
 import app.tuti.tj.ui.screens.LanguagePickScreen
-import app.tuti.tj.ui.screens.NoConnectionScreen
 import app.tuti.tj.ui.theme.ThemeManager
 import app.tuti.tj.ui.theme.ThemeMode
 import app.tuti.tj.ui.theme.TutiTheme
 
 /**
- * Состояние анонимного входа. Важен только отказ: пока попытка идёт,
- * приложение живёт как обычно — сплэш и первые шаги онбординга сети
- * не требуют.
+ * Сколько ждём Firestore при выборе стартового экрана. Дольше держать
+ * заставку нельзя: не ответили — считаем, что профиля нет, и худшее,
+ * что случится, — человек ещё раз пройдёт онбординг.
  */
-private enum class AuthState { PENDING, READY, FAILED }
+private const val PROFILE_CHECK_TIMEOUT_MS = 5_000L
 
 class MainActivity : ComponentActivity() {
 
     /** null — стартовый экран ещё не определён, системный сплэш держится. */
     private var startDestination: String? by mutableStateOf(null)
-
-    private var authState: AuthState by mutableStateOf(AuthState.PENDING)
-    private var authRetrying: Boolean by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Обязательно до super.onCreate: иначе системный сплэш не перехватится.
@@ -63,11 +62,6 @@ class MainActivity : ComponentActivity() {
         // себя Compose-экран запуска, а системный отдаёт кадр сразу. Их фоны
         // совпадают, поэтому подмена не видна.
         resolveStartDestination()
-
-        // Аккаунт заводится параллельно с первым экраном, а не в конце
-        // онбординга: к последнему шагу uid уже готов, и сохранение
-        // профиля не ждёт сети в самый неподходящий момент.
-        signIn()
 
         // Фон сплэша брендовый, а первый экран — светлый или тёмный, поэтому
         // уход построен как кроссфейд: цвет не «моргает», а перетекает.
@@ -106,20 +100,6 @@ class MainActivity : ComponentActivity() {
                     val languageChosen by LanguageManager.isChosen.collectAsState()
                     if (!languageChosen) {
                         LanguagePickScreen()
-                        return@ProvideTutiStrings
-                    }
-
-                    // Без аккаунта онбординг сохранять некуда, поэтому
-                    // новому пользователю здесь честно говорится про
-                    // сеть. Вернувшегося это не касается: его прогресс
-                    // лежит в Room и открывается офлайн.
-                    if (startDestination == ONBOARDING_ROUTE &&
-                        authState == AuthState.FAILED
-                    ) {
-                        NoConnectionScreen(
-                            isRetrying = authRetrying,
-                            onRetry = { signIn() },
-                        )
                         return@ProvideTutiStrings
                     }
 
@@ -165,51 +145,43 @@ class MainActivity : ComponentActivity() {
             // Приветственный звук на сплэше убран: он срабатывал при каждом
             // запуске, в том числе когда приложение открывают в тишине.
             // Звуки остаются там, где они — реакция на действие пользователя.
-            val onboardingDone = repo.isOnboardingCompleted()
-            // Вопросы отвечены, но аккаунт всё ещё анонимный — значит,
-            // человек не дошёл до конца: открываем сразу финальный шаг,
-            // а не главную. Пропустить его нельзя, иначе прогресс так и
-            // останется незащищённым.
-            //
-            // currentUser == null здесь тоже ведёт на финальный шаг:
-            // без аккаунта сохранять некуда, и лучше показать кнопку
-            // входа, чем сделать вид, что всё в порядке.
-            val needsAccount = FirebaseAuth.getInstance().currentUser?.isAnonymous ?: true
+            val uid = AuthRepository.currentUid
+
             startDestination = when {
-                !onboardingDone -> ONBOARDING_ROUTE
-                needsAccount -> FINAL_STEP_ROUTE
-                else -> BottomNavItem.Home.route
+                // Не вошёл — дальше экрана входа делать нечего.
+                uid == null -> SIGN_IN_ROUTE
+
+                // Локальный ответ самый быстрый и работает офлайн:
+                // если онбординг здесь уже пройден, ходить за этим
+                // в Firestore незачем.
+                repo.isOnboardingCompleted() -> BottomNavItem.Home.route
+
+                // Вошёл, а локально пусто. Развилка — наличие профиля
+                // в облаке, а не факт входа: аккаунт может быть тот же,
+                // а Tuti на нём человек ещё не открывал. Сеть здесь
+                // ограничена таймаутом, иначе заставка висела бы вечно.
+                hasCloudProfile(uid) -> {
+                    runCatching { CloudSyncManager.restoreProgress(this@MainActivity) }
+                    BottomNavItem.Home.route
+                }
+
+                else -> ONBOARDING_ROUTE
             }
 
-            if (onboardingDone) {
+            if (startDestination == BottomNavItem.Home.route) {
                 launch { syncProfileToFirestore(repo) }
             }
         }
     }
 
-    /**
-     * Анонимный вход. Повторяется по кнопке с экрана «нет сети»:
-     * [authRetrying] держит на ней спиннер, а сам экран остаётся
-     * на месте, пока uid не получен — иначе человек проскочил бы
-     * в онбординг без аккаунта.
-     */
-    private fun signIn() {
-        if (authRetrying) return
-        authRetrying = true
-        lifecycleScope.launch {
-            val result = AuthRepository.ensureSignedIn()
-            authState = if (result.isSuccess) AuthState.READY else AuthState.FAILED
-            authRetrying = false
-        }
-    }
+    private suspend fun hasCloudProfile(uid: String): Boolean =
+        withTimeoutOrNull(PROFILE_CHECK_TIMEOUT_MS) {
+            UserProfileRepository.hasProfile(uid)
+        } ?: false
 
     private suspend fun syncProfileToFirestore(repo: TutiRepository) {
         runCatching {
             val fbUser = FirebaseAuth.getInstance().currentUser ?: return@runCatching
-            // Анонимному аккаунту в лидерборде делать нечего: имени у
-            // него нет, и карточка вышла бы безымянной. Он попадёт туда
-            // вместе с Google — там появится и имя.
-            if (fbUser.isAnonymous) return@runCatching
             val prefs = getSharedPreferences("tuti_prefs", Context.MODE_PRIVATE)
             val city = prefs.getString("user_city", "Душанбе") ?: "Душанбе"
             val user = repo.getUserOnce()

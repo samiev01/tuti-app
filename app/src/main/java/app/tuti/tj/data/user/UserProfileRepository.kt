@@ -26,8 +26,20 @@ object UserProfileRepository {
 
     private val firestore: FirebaseFirestore get() = Firebase.firestore
 
+    /**
+     * Возвращающегося пользователя отличает документ профиля, а не
+     * сам факт входа: аккаунт Google может быть тот же, а Tuti на
+     * нём человек ещё не открывал.
+     */
+    suspend fun hasProfile(uid: String): Boolean =
+        runCatching {
+            firestore.collection("users").document(uid).get().await().exists()
+        }.onFailure { e ->
+            Log.w(TAG, "hasProfile failed: ${e.message}", e)
+        }.getOrDefault(false)
+
     suspend fun saveOnboarding(profile: OnboardingProfile): Result<Unit> = runCatching<Unit> {
-        val uid = AuthRepository.ensureSignedIn().getOrThrow()
+        val uid = AuthRepository.currentUid ?: error("not signed in")
 
         val data = mapOf(
             "language" to profile.language.name,

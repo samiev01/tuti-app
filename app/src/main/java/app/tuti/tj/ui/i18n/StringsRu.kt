@@ -154,8 +154,7 @@ object RuOnboarding : OnboardingStrings {
 }
 
 object RuFinalStep : FinalStepStrings {
-    override val subtitle =
-        "Сохраните прогресс — при смене телефона\nвсё останется с вами."
+    override val subtitle = "Ваш курс готов. Начнём!"
 
     override val summaryTitle = "Ваш выбор"
     override val labelLanguage = "Язык"
@@ -163,19 +162,6 @@ object RuFinalStep : FinalStepStrings {
     override val labelLevel = "Уровень"
     override val labelCity = "Город"
     override val labelDailyTime = "Каждый день"
-
-    override val saveWithGoogle = "Сохранить через Google"
-    override val help = "Помощь"
-
-    override val restoredTitle = "С возвращением! 🎉"
-    override val restoredMessage = "Ваш прогресс восстановлен."
-
-    override val errorNoNetwork = "Нет интернета. Проверьте подключение."
-    override val errorPlayServices =
-        "Сервисы Google недоступны на этом телефоне."
-    override val errorAccountConflict =
-        "Этот аккаунт уже используется. Восстанавливаем ваш прогресс."
-    override val errorUnknown = "Не получилось войти. Попробуйте ещё раз."
 }
 
 object RuCities : CityStrings {
@@ -631,4 +617,14 @@ object RuAuth : AuthStrings {
     override val genericRetry = "Попробуйте ещё раз"
 
     override fun errorWithMessage(message: String) = "Ошибка: $message"
+
+    override val errorNoNetwork = "Нет интернета. Проверьте подключение."
+    override val errorPlayServices =
+        "Сервисы Google недоступны на этом телефоне."
+    override val errorUnknown = "Не получилось войти. Попробуйте ещё раз."
+
+    override val help = "Помощь"
+
+    override val restoredTitle = "С возвращением! 🎉"
+    override val restoredMessage = "Ваш прогресс восстановлен."
 }

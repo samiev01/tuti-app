@@ -136,8 +136,7 @@ object TjOnboarding : OnboardingStrings {
 }
 
 object TjFinalStep : FinalStepStrings {
-    override val subtitle =
-        "Пешрафти худро нигоҳ доред — ҳангоми иваз кардани телефон\nҳама чиз бо шумо мемонад."
+    override val subtitle = "Курси шумо тайёр аст. Биёед оғоз кунем!"
 
     override val summaryTitle = "Интихоби шумо"
     override val labelLanguage = "Забон"
@@ -145,19 +144,6 @@ object TjFinalStep : FinalStepStrings {
     override val labelLevel = "Сатҳ"
     override val labelCity = "Шаҳр"
     override val labelDailyTime = "Ҳар рӯз"
-
-    override val saveWithGoogle = "Бо Google нигоҳ доштан"
-    override val help = "Кӯмак"
-
-    override val restoredTitle = "Хуш омадед бозгашт! 🎉"
-    override val restoredMessage = "Пешрафти шумо баргардонида шуд."
-
-    override val errorNoNetwork = "Интернет нест. Пайвастро санҷед."
-    override val errorPlayServices =
-        "Хидматҳои Google дар ин телефон дастрас нестанд."
-    override val errorAccountConflict =
-        "Ин аккаунт аллакай истифода мешавад. Пешрафти шуморо бармегардонем."
-    override val errorUnknown = "Ворид шудан нашуд. Дубора кӯшиш кунед."
 }
 
 object TjCities : CityStrings {
@@ -581,4 +567,14 @@ object TjAuth : AuthStrings {
     override val genericRetry = "Дубора кӯшиш кунед"
 
     override fun errorWithMessage(message: String) = "Хатогӣ: $message"
+
+    override val errorNoNetwork = "Интернет нест. Пайвастро санҷед."
+    override val errorPlayServices =
+        "Хидматҳои Google дар ин телефон дастрас нестанд."
+    override val errorUnknown = "Ворид шудан нашуд. Дубора кӯшиш кунед."
+
+    override val help = "Кӯмак"
+
+    override val restoredTitle = "Хуш омадед бозгашт! 🎉"
+    override val restoredMessage = "Пешрафти шумо баргардонида шуд."
 }

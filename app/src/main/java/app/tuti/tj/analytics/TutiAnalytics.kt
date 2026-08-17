@@ -25,15 +25,19 @@ object TutiAnalytics {
 
     private val firebase: FirebaseAnalytics get() = Firebase.analytics
 
-    /** Финальный шаг онбординга показан. */
-    fun finalStepShown() = log("onboarding_final_shown")
+    /** Экран входа показан. */
+    fun signInShown() = log("signin_shown")
 
-    /** Нажата кнопка входа через Google на финальном шаге. */
-    fun finalStepSignInClick() = log("onboarding_final_signin_click")
+    /**
+     * Вход состоялся. Разница между этим счётчиком и [signInShown] —
+     * и есть цена того, что вход стоит первым, до онбординга. Без
+     * неё решение потом нечем будет пересмотреть.
+     */
+    fun signInSuccess() = log("signin_success")
 
-    /** Вход на финальном шаге закончился ошибкой. [kind] — вид ошибки. */
-    fun finalStepError(kind: String) =
-        log("onboarding_final_error", Bundle().apply { putString("kind", kind) })
+    /** Вход закончился ошибкой. [kind] — вид ошибки. */
+    fun signInError(kind: String) =
+        log("signin_error", Bundle().apply { putString("kind", kind) })
 
     private fun log(name: String, params: Bundle? = null) {
         // Дубль в Logcat — чтобы событие можно было проверить сразу

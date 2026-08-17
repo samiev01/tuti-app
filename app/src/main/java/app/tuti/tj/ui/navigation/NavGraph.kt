@@ -35,6 +35,7 @@ import app.tuti.tj.ui.screens.PlusScreen
 import app.tuti.tj.ui.screens.PracticeScreen
 import app.tuti.tj.ui.screens.AchievementsScreen
 import app.tuti.tj.ui.screens.ProfileScreen
+import app.tuti.tj.ui.screens.SignInScreen
 import app.tuti.tj.ui.screens.SplashScreen
 import app.tuti.tj.ui.screens.TutiChatScreen
 import app.tuti.tj.ui.screens.TutiChatViewModel
@@ -44,14 +45,12 @@ import app.tuti.tj.ui.screens.WritingPracticeViewModelFactory
 import kotlinx.coroutines.launch
 
 const val SPLASH_ROUTE = "splash"
+
+/** Вход стоит первым: без аккаунта ответы онбординга сохранять некуда. */
+const val SIGN_IN_ROUTE = "sign_in"
 const val ONBOARDING_ROUTE = "onboarding"
 
-/**
- * Финальный шаг онбординга. Отдельный маршрут, а не последняя
- * страница онбординга: на него попадают и при перезапуске
- * приложения, когда все вопросы уже отвечены, а аккаунт всё ещё
- * анонимный.
- */
+/** Финальный шаг онбординга: сводка выбора и переход на главную. */
 const val FINAL_STEP_ROUTE = "final_step"
 const val WORD_LEARN_ROUTE = "word_learn/{topicId}"
 const val QUIZ_ROUTE = "quiz/{topicId}"
@@ -97,6 +96,21 @@ fun NavGraph(
                 onContinue = { route ->
                     navController.navigate(route) {
                         popUpTo(SPLASH_ROUTE) { inclusive = true }
+                    }
+                },
+            )
+        }
+
+        composable(SIGN_IN_ROUTE) {
+            SignInScreen(
+                onNeedsOnboarding = {
+                    navController.navigate(ONBOARDING_ROUTE) {
+                        popUpTo(SIGN_IN_ROUTE) { inclusive = true }
+                    }
+                },
+                onRestored = {
+                    navController.navigate(BottomNavItem.Home.route) {
+                        popUpTo(SIGN_IN_ROUTE) { inclusive = true }
                     }
                 },
             )

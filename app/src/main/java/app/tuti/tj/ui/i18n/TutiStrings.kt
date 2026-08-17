@@ -159,7 +159,6 @@ interface OnboardingStrings {
 // ─────────────────────────────────────────────
 
 interface FinalStepStrings {
-    /** Не «войдите», а «сохраните»: человек защищает своё, а не выполняет требование. */
     val subtitle: String
 
     val summaryTitle: String
@@ -168,22 +167,6 @@ interface FinalStepStrings {
     val labelLevel: String
     val labelCity: String
     val labelDailyTime: String
-
-    val saveWithGoogle: String
-
-    /** Единственный выход из тупика, раз кнопки «потом» нет. */
-    val help: String
-
-    // Вошли старым аккаунтом после переустановки: прогресс вернулся.
-    val restoredTitle: String
-    val restoredMessage: String
-
-    // Причина плюс действие. Кодов ошибок на экране нет: человеку
-    // нечего с ними делать, а доверия они не прибавляют.
-    val errorNoNetwork: String
-    val errorPlayServices: String
-    val errorAccountConflict: String
-    val errorUnknown: String
 }
 
 // ─────────────────────────────────────────────
@@ -637,4 +620,17 @@ interface AuthStrings {
     val genericRetry: String
 
     fun errorWithMessage(message: String): String
+
+    // Причина плюс действие. Кодов ошибок на экране нет: человеку
+    // нечего с ними делать, а доверия они не прибавляют.
+    val errorNoNetwork: String
+    val errorPlayServices: String
+    val errorUnknown: String
+
+    /** Ссылка в поддержку там, где человек сам ничего сделать не может. */
+    val help: String
+
+    /** Вошёл аккаунтом, которым уже пользовался: прогресс вернулся. */
+    val restoredTitle: String
+    val restoredMessage: String
 }

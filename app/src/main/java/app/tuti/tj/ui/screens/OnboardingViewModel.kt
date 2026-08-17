@@ -109,14 +109,12 @@ class OnboardingViewModel : ViewModel() {
             UserProfileRepository.saveOnboarding(profile)
         }
 
-        // Публичная карточка лидерборда заводится только для именованного
-        // аккаунта: анонимному нечего показать, кроме uid.
-        if (!AuthRepository.isAnonymous) {
-            AuthRepository.currentUid?.let { uid ->
-                FirestoreManager.saveUserProfile(
-                    uid, AuthRepository.displayName, city.tajikName, 0,
-                )
-            }
+        // Карточка в рейтинге: сюда человек попадает уже с именем,
+        // безымянных аккаунтов больше не бывает.
+        AuthRepository.currentUid?.let { uid ->
+            FirestoreManager.saveUserProfile(
+                uid, AuthRepository.displayName, city.tajikName, 0,
+            )
         }
 
         runCatching { NotificationScheduler.scheduleDailyReminders(context) }
