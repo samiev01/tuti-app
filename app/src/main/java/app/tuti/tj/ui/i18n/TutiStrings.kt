@@ -515,19 +515,14 @@ interface PlusStrings {
     val benefitModules: String
     val benefitNoAds: String
 
-    val pricesTitle: String
+    // Подписи тарифов остались ради диалога лимитов; на самом
+    // экране Plus цен больше нет — там только активация.
     val monthly: String
     val yearly: String
-    val monthlyPeriod: String
-    val yearlyPeriod: String
-    val saveBadge: String
     val currency: String
 
-    val howToBuy: String
-    val stepTelegram: String
-    val stepPay: String
-    val stepGetCode: String
-    val stepEnterCode: String
+    /** Ведёт в тот же Telegram, что и «Кӯмак» на экране входа. */
+    val contactUs: String
 
     val promoTitle: String
     val promoActivate: String

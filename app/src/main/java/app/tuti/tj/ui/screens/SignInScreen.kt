@@ -1,7 +1,5 @@
 package app.tuti.tj.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,6 +46,7 @@ import app.tuti.tj.data.auth.AuthErrorKind
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.ui.components.GreetingOrbit
 import app.tuti.tj.ui.components.findActivity
+import app.tuti.tj.ui.components.openSupportChat
 import app.tuti.tj.ui.components.kit.TutiButton
 import app.tuti.tj.ui.components.kit.TutiButtonSize
 import app.tuti.tj.ui.i18n.LocalTutiStrings
@@ -69,9 +68,6 @@ import app.tuti.tj.ui.theme.tutiColors
 //  человек сам ничего сделать не может, — ещё и ссылку в поддержку.
 //  Отмена выбора аккаунта ошибкой не считается.
 // ════════════════════════════════════════════════════════════════
-
-/** TODO: заменить на настоящий канал поддержки. */
-private const val SUPPORT_TELEGRAM_URL = "https://t.me/tutitj"
 
 @Composable
 fun SignInScreen(
@@ -259,15 +255,6 @@ private fun AuthBanner(
                 color = tone.onSoft,
             )
         }
-    }
-}
-
-private fun android.content.Context.openSupportChat() {
-    runCatching {
-        startActivity(
-            Intent(Intent.ACTION_VIEW, Uri.parse(SUPPORT_TELEGRAM_URL))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-        )
     }
 }
 

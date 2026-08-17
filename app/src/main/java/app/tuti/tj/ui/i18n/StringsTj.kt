@@ -468,19 +468,11 @@ object TjPlus : PlusStrings {
     override val benefitModules = "Ҳамаи модулҳо кушода"
     override val benefitNoAds = "Бе реклама"
 
-    override val pricesTitle = "Нархҳо"
     override val monthly = "Моҳона"
     override val yearly = "Солона"
-    override val monthlyPeriod = "30 рӯз"
-    override val yearlyPeriod = "365 рӯз"
-    override val saveBadge = "Сарфа 57%"
     override val currency = "сомонӣ"
 
-    override val howToBuy = "Чӣ тавр харидан"
-    override val stepTelegram = "Ба @tuti_support дар Telegram нависед"
-    override val stepPay = "Маблағро гузаронед"
-    override val stepGetCode = "Промокод мегиред"
-    override val stepEnterCode = "Дар поён ворид кунед"
+    override val contactUs = "Бо мо тамос гиред"
 
     override val promoTitle = "Промокод"
     override val promoActivate = "Фаъол кардан"

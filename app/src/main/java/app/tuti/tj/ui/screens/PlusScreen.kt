@@ -1,7 +1,6 @@
 package app.tuti.tj.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,17 +36,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.tuti.tj.audio.TutiSoundManager
 import app.tuti.tj.data.subscription.PlusManager
 import app.tuti.tj.data.subscription.PromoCodeManager
+import app.tuti.tj.ui.components.openSupportChat
 import app.tuti.tj.ui.components.kit.TutiButton
 import app.tuti.tj.ui.components.kit.TutiButtonSize
 import app.tuti.tj.ui.components.kit.TutiButtonTone
 import app.tuti.tj.ui.components.kit.TutiCard
 import app.tuti.tj.ui.components.kit.TutiIconTile
-import app.tuti.tj.ui.components.kit.TutiPill
 import app.tuti.tj.ui.mascot.TutiMascotVector
 import app.tuti.tj.ui.mascot.TutiState
 import app.tuti.tj.ui.theme.TutiRadius
@@ -60,11 +60,13 @@ import app.tuti.tj.ui.i18n.PlusStrings
 // ════════════════════════════════════════════════════════════════
 //  TUTI PLUS
 //
-//  Единственный экран, где допустимо «продавать». Отсюда:
-//  золотая hero-шапка с маскотом, преимущества плитками (а не
-//  списком мелким текстом), выделенный годовой тариф и понятная
-//  инструкция «как купить» перед полем промокода — пользователь
-//  не должен искать, что делать после нажатия.
+//  Экран рассказывает, что даёт Plus, и даёт две вещи: способ
+//  связаться с нами и поле для активации промокода. Цен, тарифов
+//  и шагов оплаты здесь нет — Plus включается кодом, а обо всём
+//  остальном договариваются в Telegram.
+//
+//  Отсюда золотая hero-шапка с маскотом и преимущества плитками,
+//  а не списком мелким текстом.
 // ════════════════════════════════════════════════════════════════
 
 private data class Benefit(val emoji: String, val text: String)
@@ -90,7 +92,6 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
     var resultMessage by remember { mutableStateOf("") }
     var isSuccess by remember { mutableStateOf(false) }
-    var selectedPlan by remember { mutableStateOf(1) } // 0 — месяц, 1 — год
 
     val isPlus = remember { PlusManager.isPlusActive(context) }
     val daysRemaining = remember { PlusManager.getDaysRemaining(context) }
@@ -209,82 +210,19 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
                 }
             }
 
-            // ── тарифы ───────────────────────────
-            Column {
-                Text(
-                    text = s.pricesTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(TutiSpace.md))
-
-                PlanCard(
-                    title = s.monthly,
-                    subtitle = s.monthlyPeriod,
-                    price = "29",
-                    selected = selectedPlan == 0,
-                    accentBase = c.jade.base,
-                    accentSoft = c.jade.soft,
-                    onClick = { selectedPlan = 0 },
-                )
-                Spacer(Modifier.height(TutiSpace.sm))
-                PlanCard(
-                    title = s.yearly,
-                    subtitle = s.yearlyPeriod,
-                    price = "149",
-                    badge = s.saveBadge,
-                    selected = selectedPlan == 1,
-                    accentBase = c.mango.base,
-                    accentSoft = c.mango.soft,
-                    onClick = { selectedPlan = 1 },
-                )
-            }
-
-            // ── как купить ───────────────────────
-            Column {
-                Text(
-                    text = s.howToBuy,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(TutiSpace.md))
-                TutiCard(modifier = Modifier.fillMaxWidth(), contentPadding = TutiSpace.lg) {
-                    val steps = listOf(
-                        s.stepTelegram,
-                        s.stepPay,
-                        s.stepGetCode,
-                        s.stepEnterCode,
-                    )
-                    steps.forEachIndexed { i, step ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = TutiSpace.sm),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .clip(RoundedCornerShape(TutiRadius.pill))
-                                    .background(c.jade.soft),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "${i + 1}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = c.jade.onSoft,
-                                )
-                            }
-                            Spacer(Modifier.width(TutiSpace.md))
-                            Text(
-                                text = step,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                }
-            }
+            // ── связь с нами ─────────────────────
+            Text(
+                text = s.contactUs,
+                style = MaterialTheme.typography.labelLarge,
+                color = c.jade.base,
+                textDecoration = TextDecoration.Underline,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(TutiRadius.sm))
+                    .clickable { context.openSupportChat() }
+                    .padding(vertical = TutiSpace.sm),
+            )
 
             // ── промокод ─────────────────────────
             Column {
@@ -384,73 +322,3 @@ fun PlusScreen(onBack: () -> Unit, onActivated: () -> Unit) {
     }
 }
 
-/**
- * Тариф. Выбранный отличается заливкой и толщиной рамки, а не
- * только галочкой — на маленьком экране это заметнее.
- */
-@Composable
-private fun PlanCard(
-    title: String,
-    subtitle: String,
-    price: String,
-    selected: Boolean,
-    accentBase: Color,
-    accentSoft: Color,
-    onClick: () -> Unit,
-    badge: String? = null,
-) {
-    val c = MaterialTheme.tutiColors
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(TutiRadius.lg))
-            .background(if (selected) accentSoft else MaterialTheme.colorScheme.surface)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = if (selected) accentBase else c.cardBorder,
-                shape = RoundedCornerShape(TutiRadius.lg),
-            )
-            .clickable { onClick() }
-            .padding(TutiSpace.lg),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SelectionCheck(selected = selected, color = accentBase)
-        Spacer(Modifier.width(TutiSpace.md))
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                if (badge != null) {
-                    Spacer(Modifier.width(TutiSpace.sm))
-                    TutiPill(
-                        text = badge,
-                        background = accentBase,
-                        contentColor = Color.White,
-                    )
-                }
-            }
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = price,
-                style = MaterialTheme.typography.displaySmall,
-                fontSize = 24.sp,
-                color = accentBase,
-            )
-            Text(
-                text = LocalTutiStrings.current.plus.currency,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}

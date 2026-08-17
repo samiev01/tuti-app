@@ -515,19 +515,11 @@ object RuPlus : PlusStrings {
     override val benefitModules = "Все модули открыты"
     override val benefitNoAds = "Без рекламы"
 
-    override val pricesTitle = "Цены"
     override val monthly = "На месяц"
     override val yearly = "На год"
-    override val monthlyPeriod = "30 дней"
-    override val yearlyPeriod = "365 дней"
-    override val saveBadge = "Выгода 57%"
     override val currency = "сомони"
 
-    override val howToBuy = "Как купить"
-    override val stepTelegram = "Напишите @tuti_support в Telegram"
-    override val stepPay = "Переведите оплату"
-    override val stepGetCode = "Получите промокод"
-    override val stepEnterCode = "Введите его ниже"
+    override val contactUs = "Свяжитесь с нами"
 
     override val promoTitle = "Промокод"
     override val promoActivate = "Активировать"
