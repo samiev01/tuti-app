@@ -4,14 +4,19 @@
     <style name="Theme.Tuti" parent="android:Theme.Material.Light.NoActionBar" />
 
     <!--
-      Стартовая тема активити. Системный сплэш здесь намеренно минимален —
-      только фон и маскот: сразу за ним открывается Compose-экран запуска
-      со всей композицией. Логотип и круг-медальон убраны, иначе на старте
-      было бы две разные заставки подряд и скачок размеров.
+      Стартовая тема активити.
+
+      Системный сплэш на Android 12+ обязателен: убрать его нельзя, можно
+      только сделать незаметным. Поэтому иконки здесь нет вовсе —
+      прозрачная вместо маскота, — и от заставки остаётся ровный фон
+      цвета первого экрана. Визуально приложение открывается сразу.
+
+      Пустым атрибут оставить нельзя: без него система подставит иконку
+      приложения, то есть вернёт заставку, только с другим рисунком.
     -->
     <style name="Theme.Tuti.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_tuti_splash</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/Theme.Tuti</item>
     </style>
 </resources>

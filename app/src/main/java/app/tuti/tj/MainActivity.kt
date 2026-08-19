@@ -2,7 +2,6 @@ package app.tuti.tj
 
 import android.content.Context
 import android.os.Bundle
-import android.view.animation.PathInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -58,30 +57,17 @@ class MainActivity : ComponentActivity() {
     private var startDestination: String? by mutableStateOf(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Обязательно до super.onCreate: иначе системный сплэш не перехватится.
-        val splashScreen = installSplashScreen()
+        // Обязательно до super.onCreate: иначе тема после сплэша
+        // не подменится и активити останется со стартовой.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // Системный сплэш больше не удерживается: ожидание данных взял на
-        // себя Compose-экран запуска, а системный отдаёт кадр сразу. Их фоны
-        // совпадают, поэтому подмена не видна.
+        // Системный сплэш ничего не удерживает и ничем не анимируется:
+        // рисунка на нём больше нет, а фон совпадает с первым экраном,
+        // так что уходить ему нечем — система снимает его сама, сразу.
+        // Раньше здесь висел кроссфейд на 320 мс, он только задерживал
+        // открытие.
         resolveStartDestination()
-
-        // Фон сплэша брендовый, а первый экран — светлый или тёмный, поэтому
-        // уход построен как кроссфейд: цвет не «моргает», а перетекает.
-        // Лёгкое увеличение добавляет направление движению, но держится
-        // в пределах 6 % — иначе на цветном фоне рывок слишком заметен.
-        // Кривая та же, что у переходов внутри приложения (TutiMotion.standard).
-        splashScreen.setOnExitAnimationListener { provider ->
-            provider.view.animate()
-                .alpha(0f)
-                .scaleX(1.06f)
-                .scaleY(1.06f)
-                .setDuration(320L)
-                .setInterpolator(PathInterpolator(0.2f, 0f, 0f, 1f))
-                .withEndAction { provider.remove() }
-                .start()
-        }
 
         enableEdgeToEdge()
         setContent {
