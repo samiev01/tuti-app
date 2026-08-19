@@ -14,6 +14,7 @@ import app.tuti.tj.data.auth.GoogleIdTokenResult
 import app.tuti.tj.data.auth.toAuthErrorKind
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.sync.CloudSyncManager
+import app.tuti.tj.data.user.AgeGateManager
 import app.tuti.tj.data.user.AuthRepository
 import app.tuti.tj.data.user.UserProfileRepository
 import app.tuti.tj.data.user.applyLocally
@@ -88,6 +89,13 @@ class SignInViewModel : ViewModel() {
                 .onSuccess { uid ->
                     TutiAnalytics.signInSuccess()
                     AuthRepository.persistProfile(context)
+
+                    // Дату рождения спрашивали до входа, uid тогда не
+                    // существовало. Теперь он есть — довозим её в профиль.
+                    AgeGateManager.birthDate(context)?.let { birthDate ->
+                        UserProfileRepository.saveBirthDate(uid, birthDate)
+                    }
+
                     state = resolveDestination(uid, context, repository)
                 }
         }

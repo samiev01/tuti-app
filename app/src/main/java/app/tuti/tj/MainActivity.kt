@@ -29,6 +29,8 @@ import app.tuti.tj.ui.navigation.SIGN_IN_ROUTE
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.data.remote.FirestoreManager
 import app.tuti.tj.data.sync.CloudSyncManager
+import app.tuti.tj.data.user.AgeGateManager
+import app.tuti.tj.data.user.AgeGateVerdict
 import app.tuti.tj.data.user.AuthRepository
 import app.tuti.tj.data.user.UserProfileRepository
 import app.tuti.tj.data.user.applyLocally
@@ -37,6 +39,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import app.tuti.tj.ui.i18n.LanguageManager
 import app.tuti.tj.ui.i18n.ProvideTutiStrings
+import app.tuti.tj.ui.screens.AgeGateScreen
 import app.tuti.tj.ui.screens.LanguagePickScreen
 import app.tuti.tj.ui.theme.ThemeManager
 import app.tuti.tj.ui.theme.ThemeMode
@@ -101,6 +104,16 @@ class MainActivity : ComponentActivity() {
                     val languageChosen by LanguageManager.isChosen.collectAsState()
                     if (!languageChosen) {
                         LanguagePickScreen()
+                        return@ProvideTutiStrings
+                    }
+
+                    // Возраст спрашивается до входа: аккаунта ещё нет,
+                    // а пускать дальше можно не всех. Гейт стоит здесь,
+                    // а не маршрутом в навигации, — тогда при отказе до
+                    // графа дело просто не доходит и обходить нечего.
+                    val ageVerdict by AgeGateManager.verdict.collectAsState()
+                    if (ageVerdict != AgeGateVerdict.ALLOWED) {
+                        AgeGateScreen()
                         return@ProvideTutiStrings
                     }
 

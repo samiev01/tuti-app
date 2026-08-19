@@ -30,6 +30,7 @@ object RuStrings : TutiStrings {
     override val nav = RuNav
     override val onboarding = RuOnboarding
     override val finalStep = RuFinalStep
+    override val ageGate = RuAgeGate
     override val home = RuHome
     override val lessons = RuLessons
     override val lessonFlow = RuLessonFlow
@@ -151,6 +152,21 @@ object RuOnboarding : OnboardingStrings {
 
     override fun minutes(count: Int) =
         "$count ${plural(count, "минута", "минуты", "минут")}"
+}
+
+object RuAgeGate : AgeGateStrings {
+    override val title = "Ваша дата рождения"
+    override val subtitle = "Чтобы продолжить, укажите дату рождения"
+
+    override val dayLabel = "День"
+    override val monthLabel = "Месяц"
+    override val yearLabel = "Год"
+    override val invalidDate = "Такой даты не существует"
+
+    override val blockedTitle = "Доступ ограничен"
+    override val blockedMessage = "Приложение Tuti доступно с 13 лет."
+    override val blockedContactHint = "Есть вопрос? Напишите нам:"
+    override val supportEmail = "tutiapp08@gmail.com"
 }
 
 object RuFinalStep : FinalStepStrings {
@@ -496,11 +512,6 @@ object RuLeaderboard : LeaderboardStrings {
     override val signInTitle = "Войдите, чтобы видеть рейтинг"
     override val signInMessage =
         "Войдите, чтобы видеть общий рейтинг и соревноваться с другими."
-    override val topOne = "🏆 Вы на первом месте в рейтинге!"
-    override val motivation = "Пройдите урок сегодня и поднимитесь выше! 💪"
-
-    override fun toNextRank(rank: Int, diff: Int) =
-        "⚡ До $rank места осталось всего $diff ${plural(diff, "балл", "балла", "баллов")}!"
 }
 
 object RuPlus : PlusStrings {

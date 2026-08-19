@@ -6,6 +6,7 @@ import app.tuti.tj.data.local.TutiDatabase
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.notifications.NotificationScheduler
 import app.tuti.tj.notifications.TutiNotificationManager
+import app.tuti.tj.data.user.AgeGateManager
 import app.tuti.tj.ui.i18n.LanguageManager
 import app.tuti.tj.ui.theme.ThemeManager
 import com.google.firebase.Firebase
@@ -30,6 +31,9 @@ class TutiApplication : Application() {
         // Язык нужен раньше канала уведомлений: имя канала берётся
         // из словаря, а после создания канала система его уже не меняет.
         LanguageManager.init(this)
+        // Возрастной порог спрашивается до входа, поэтому вердикт
+        // нужен уже к первому кадру.
+        AgeGateManager.init(this)
         TutiSoundManager.init(this)
         TutiNotificationManager.createChannel(this)
 

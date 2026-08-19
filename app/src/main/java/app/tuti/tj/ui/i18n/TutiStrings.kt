@@ -23,6 +23,7 @@ interface TutiStrings {
     val nav: NavStrings
     val onboarding: OnboardingStrings
     val finalStep: FinalStepStrings
+    val ageGate: AgeGateStrings
     val home: HomeStrings
     val lessons: LessonsStrings
     val lessonFlow: LessonFlowStrings
@@ -152,6 +153,30 @@ interface OnboardingStrings {
     val offlineMessage: String
 
     fun minutes(count: Int): String
+}
+
+// ─────────────────────────────────────────────
+//  Возрастной порог: дата рождения и отказ
+// ─────────────────────────────────────────────
+
+interface AgeGateStrings {
+    val title: String
+
+    /**
+     * Нейтрально: ни порога, ни галочки «мне есть 13». Человек,
+     * который знает нужный ответ заранее, просто подгонит дату.
+     */
+    val subtitle: String
+
+    val dayLabel: String
+    val monthLabel: String
+    val yearLabel: String
+    val invalidDate: String
+
+    val blockedTitle: String
+    val blockedMessage: String
+    val blockedContactHint: String
+    val supportEmail: String
 }
 
 // ─────────────────────────────────────────────
@@ -493,10 +518,6 @@ interface LeaderboardStrings {
     val offline: String
     val signInTitle: String
     val signInMessage: String
-    val topOne: String
-    val motivation: String
-
-    fun toNextRank(rank: Int, diff: Int): String
 }
 
 // ─────────────────────────────────────────────

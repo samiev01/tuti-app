@@ -14,6 +14,7 @@ object TjStrings : TutiStrings {
     override val nav = TjNav
     override val onboarding = TjOnboarding
     override val finalStep = TjFinalStep
+    override val ageGate = TjAgeGate
     override val home = TjHome
     override val lessons = TjLessons
     override val lessonFlow = TjLessonFlow
@@ -133,6 +134,21 @@ object TjOnboarding : OnboardingStrings {
         "Барои оғоз пайвасти интернет лозим аст.\nҲамагӣ як бор."
 
     override fun minutes(count: Int) = "$count дақиқа"
+}
+
+object TjAgeGate : AgeGateStrings {
+    override val title = "Санаи таваллуди шумо"
+    override val subtitle = "Барои идома санаи таваллудатонро ворид кунед"
+
+    override val dayLabel = "Рӯз"
+    override val monthLabel = "Моҳ"
+    override val yearLabel = "Сол"
+    override val invalidDate = "Сана нодуруст аст"
+
+    override val blockedTitle = "Дастрасӣ маҳдуд аст"
+    override val blockedMessage = "Барномаи Tuti аз 13-солагӣ дастрас аст."
+    override val blockedContactHint = "Савол доред? Ба мо нависед:"
+    override val supportEmail = "tutiapp08@gmail.com"
 }
 
 object TjFinalStep : FinalStepStrings {
@@ -449,11 +465,6 @@ object TjLeaderboard : LeaderboardStrings {
     override val signInTitle = "Ворид шавед барои рейтинг"
     override val signInMessage =
         "Барои дидани рейтинги глобалӣ ва мусобиқа бо дигарон ворид шавед."
-    override val topOne = "🏆 Шумо рақами 1 дар рейтинг ҳастед!"
-    override val motivation = "Имрӯз як дарс хонед ва боло равед! 💪"
-
-    override fun toNextRank(rank: Int, diff: Int) =
-        "⚡ То ҷойгоҳи $rank ҳамагӣ $diff балл монд!"
 }
 
 object TjPlus : PlusStrings {

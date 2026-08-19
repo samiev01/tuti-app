@@ -70,6 +70,27 @@ object UserProfileRepository {
     private inline fun <reified T : Enum<T>> DocumentSnapshot.enumField(field: String): T? =
         getString(field)?.let { runCatching { enumValueOf<T>(it) }.getOrNull() }
 
+    /**
+     * Дата рождения, собранная возрастным экраном до входа. Уезжает
+     * отдельной записью: на момент вопроса uid ещё не существовало,
+     * а сам вопрос задаётся один раз на устройство.
+     */
+    suspend fun saveBirthDate(uid: String, birthDate: String): Result<Unit> = runCatching<Unit> {
+        firestore.collection("users").document(uid)
+            .set(
+                mapOf(
+                    "birthDate" to birthDate,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+                SetOptions.merge(),
+            )
+            .await()
+
+        Log.d(TAG, "saveBirthDate ok for $uid")
+    }.onFailure { e ->
+        Log.w(TAG, "saveBirthDate failed: ${e.message}", e)
+    }
+
     suspend fun saveOnboarding(profile: OnboardingProfile): Result<Unit> = runCatching<Unit> {
         val uid = AuthRepository.currentUid ?: error("not signed in")
 
