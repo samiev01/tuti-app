@@ -235,10 +235,10 @@ fun LeaderboardScreen(
                         animIndex = index,
                     )
                 }
-
-                item(key = "motivation") {
-                    val above = if (myGlobalRank > 1) allUsers.getOrNull(myGlobalRank - 2) else null
-                    MotivationCard(myRank = myGlobalRank, above = above, myXp = myXp)
+                // Хвост списка. Мотивационной карточки здесь больше
+                // нет: она забирала внимание с самого рейтинга, ради
+                // которого на экран и заходят.
+                item(key = "tail") {
                     Spacer(Modifier.height(TutiSpace.xxxl))
                 }
             }
@@ -743,54 +743,6 @@ private fun UserRow(
                     )
                 }
             }
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════
-//  МОТИВАЦИЯ
-// ═══════════════════════════════════════════════════
-
-@Composable
-private fun MotivationCard(myRank: Int, above: LeaderUserScore?, myXp: Int) {
-    if (myRank == 0) return
-    val c = MaterialTheme.tutiColors
-
-    TutiGradientCard(
-        gradient = c.streakGradient,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = TutiSpace.screen),
-        contentPadding = TutiSpace.lg,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            when {
-                myRank == 1 -> Text(
-                    text = LocalTutiStrings.current.leaderboard.topOne,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                )
-                above != null -> {
-                    val diff = (above.xp - myXp).coerceAtLeast(1)
-                    Text(
-                        text = LocalTutiStrings.current.leaderboard.toNextRank(myRank - 1, diff),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-            Spacer(Modifier.height(TutiSpace.xs))
-            Text(
-                text = LocalTutiStrings.current.leaderboard.motivation,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.9f),
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }
