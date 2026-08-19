@@ -80,10 +80,14 @@ fun LanguagePickScreen() {
 
             Spacer(Modifier.height(TutiSpace.lg))
 
-            // Приветствие маскота — на обоих языках, сверху вниз.
-            AppLanguage.entries.forEach { language ->
+            // Заголовок на обоих языках, сверху вниз. Второй — в
+            // скобках: так видно, что это тот же вопрос, а не
+            // отдельная строка, и взгляд не спотыкается о два
+            // одинаково набранных заголовка подряд.
+            AppLanguage.entries.forEachIndexed { index, language ->
+                val title = stringsFor(language).onboarding.pickLanguageTitle
                 Text(
-                    text = stringsFor(language).onboarding.pickLanguageTitle,
+                    text = if (index == 0) title else "($title)",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center,
