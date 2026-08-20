@@ -46,6 +46,7 @@ import app.tuti.tj.data.auth.AuthErrorKind
 import app.tuti.tj.data.repository.TutiRepository
 import app.tuti.tj.ui.components.GreetingOrbit
 import app.tuti.tj.ui.components.findActivity
+import app.tuti.tj.ui.components.openPrivacyPolicy
 import app.tuti.tj.ui.components.openSupportChat
 import app.tuti.tj.ui.components.kit.TutiButton
 import app.tuti.tj.ui.components.kit.TutiButtonSize
@@ -274,6 +275,7 @@ private fun GoogleSignInButton(
 ) {
     val c = MaterialTheme.tutiColors
     val strings = LocalTutiStrings.current
+    val context = LocalContext.current
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val shape = RoundedCornerShape(TutiRadius.lg)
@@ -341,6 +343,22 @@ private fun GoogleSignInButton(
             fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
+        )
+
+        // Сама политика — отдельной строкой и по-настоящему
+        // нажимаемой. Внутри абзаца ссылку не разглядеть, а
+        // согласие даётся именно здесь, до входа.
+        Text(
+            text = strings.onboarding.privacyPolicy,
+            style = MaterialTheme.typography.bodySmall,
+            fontSize = 11.sp,
+            color = c.jade.base,
+            textDecoration = TextDecoration.Underline,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .clip(RoundedCornerShape(TutiRadius.sm))
+                .clickable { context.openPrivacyPolicy() }
+                .padding(horizontal = TutiSpace.sm, vertical = TutiSpace.xs),
         )
     }
 }

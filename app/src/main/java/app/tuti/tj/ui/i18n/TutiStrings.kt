@@ -104,6 +104,9 @@ interface OnboardingStrings {
     val tagline: String
     val googleSignIn: String
     val terms: String
+
+    /** Подпись ссылки на политику: сам адрес живёт в ui/components. */
+    val privacyPolicy: String
     val cloudRestored: String
 
     val languageTitle: String

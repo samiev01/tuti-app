@@ -103,6 +103,7 @@ object RuOnboarding : OnboardingStrings {
     override val googleSignIn = "Войти через Google"
     override val terms = "Входя, вы принимаете условия использования\n" +
         "и политику конфиденциальности"
+    override val privacyPolicy = "Политика конфиденциальности"
     override val cloudRestored = "☁️ Ваши данные восстановлены!"
 
     override val languageTitle = "Какой язык?"

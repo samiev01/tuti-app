@@ -86,6 +86,7 @@ object TjOnboarding : OnboardingStrings {
     override val googleSignIn = "Бо Google ворид шавед"
     override val terms = "Бо ворид шудан шумо шартҳои истифода\n" +
         "ва сиёсати махфиятро қабул мекунед"
+    override val privacyPolicy = "Сиёсати махфият"
     override val cloudRestored = "☁️ Маълумоти шумо барқарор шуд!"
 
     override val languageTitle = "Кадом забон?"
