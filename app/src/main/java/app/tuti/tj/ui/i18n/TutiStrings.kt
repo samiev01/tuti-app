@@ -579,6 +579,19 @@ interface ChatStrings {
     val quickHello: String
     val quickShop: String
     val quickGrammar: String
+
+    // Жалоба на ответ репетитора. Иконка держится незаметной:
+    // это запасной путь, а не действие, которое предлагают.
+    val reportAction: String
+    val reportTitle: String
+    val reportSubtitle: String
+    val reasonWrongAnswer: String
+    val reasonOffensive: String
+    val reasonOther: String
+    val commentPlaceholder: String
+    val reportSend: String
+    val reportSentTitle: String
+    val reportSentMessage: String
 }
 
 // ─────────────────────────────────────────────

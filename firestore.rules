@@ -67,6 +67,16 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
     }
 
+    // ai_reports/{id} — жалобы на ответы ИИ-репетитора. Писать может
+    // любой авторизованный и только на себя: чужой userId в жалобе
+    // сделал бы её бесполезной. Читать из приложения нечего — разбор
+    // идёт из консоли, поэтому чтение закрыто вовсе.
+    match /ai_reports/{reportId} {
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+
     // Всё остальное закрыто.
     match /{document=**} {
       allow read, write: if false;

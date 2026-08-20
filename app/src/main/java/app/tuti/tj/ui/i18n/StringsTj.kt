@@ -519,6 +519,17 @@ object TjChat : ChatStrings {
     override val quickHello = "Привет, как дела?"
     override val quickShop = "Дар мағоза чӣ гӯям?"
     override val quickGrammar = "Грамматикаро шарҳ деҳ"
+
+    override val reportAction = "Шикоят"
+    override val reportTitle = "Шикоят ба ҷавоб"
+    override val reportSubtitle = "Чӣ хато буд?"
+    override val reasonWrongAnswer = "Ҷавоби нодуруст"
+    override val reasonOffensive = "Мазмуни таҳқиромез"
+    override val reasonOther = "Дигар"
+    override val commentPlaceholder = "Шарҳ (ихтиёрӣ)"
+    override val reportSend = "Фиристодан"
+    override val reportSentTitle = "Ташаккур! ✅"
+    override val reportSentMessage = "Шикояти шумо қабул шуд."
 }
 
 object TjNotifications : NotificationStrings {

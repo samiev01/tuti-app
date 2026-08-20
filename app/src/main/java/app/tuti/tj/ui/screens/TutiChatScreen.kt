@@ -62,6 +62,7 @@ import app.tuti.tj.audio.TutiSoundManager
 import app.tuti.tj.data.TutiTipsManager
 import app.tuti.tj.data.subscription.FreeLimits
 import app.tuti.tj.ui.components.LivingTutiMascot
+import app.tuti.tj.ui.components.AiReportSheet
 import app.tuti.tj.ui.components.PaywallDialog
 import app.tuti.tj.ui.components.SmartTutiTip
 import app.tuti.tj.ui.components.kit.TutiIconButton
@@ -93,6 +94,8 @@ fun TutiChatScreen(
     val context = LocalContext.current
     val c = MaterialTheme.tutiColors
     var showPaywall by remember { mutableStateOf(false) }
+    // Текст ответа, на который жалуются. null — лист закрыт.
+    var reportedMessage by remember { mutableStateOf<String?>(null) }
     val messages = viewModel.messages
     val inputText = viewModel.inputText
     val isLoading = viewModel.isLoading
@@ -165,6 +168,7 @@ fun TutiChatScreen(
                             runCatching { TutiSoundManager.playButtonClick() }
                             viewModel.retryAfterError(msg.id)
                         },
+                        onReport = { reportedMessage = msg.text },
                     )
                 }
                 if (isLoading) {
@@ -215,6 +219,15 @@ fun TutiChatScreen(
             PaywallDialog(
                 onGetPlus = { showPaywall = false; onNavigateToPlus() },
                 onDismiss = { showPaywall = false },
+            )
+        }
+
+        // Лист жалобы живёт рядом с диалогом лимитов: оба всплывают
+        // поверх переписки и никуда с экрана не уводят.
+        reportedMessage?.let { text ->
+            AiReportSheet(
+                messageText = text,
+                onDismiss = { reportedMessage = null },
             )
         }
     }
@@ -366,7 +379,11 @@ private fun WelcomeBlock(onChip: (String) -> Unit) {
 // ═══════════════════════════════════════════════════
 
 @Composable
-private fun ChatMessageBubble(message: UiChatMessage, onRetry: () -> Unit) {
+private fun ChatMessageBubble(
+    message: UiChatMessage,
+    onRetry: () -> Unit,
+    onReport: () -> Unit,
+) {
     val c = MaterialTheme.tutiColors
     val timeStr = remember(message.timestamp) {
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(message.timestamp))
@@ -439,12 +456,28 @@ private fun ChatMessageBubble(message: UiChatMessage, onRetry: () -> Unit) {
                     }
                 }
             }
-            Text(
-                text = timeStr,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            )
+            // Время и жалоба в одной строке: флажок нужен изредка и
+            // спорить с текстом ответа не должен. У своих сообщений
+            // и у ошибок его нет — жаловаться там не на что.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = timeStr,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                )
+                if (!message.isUser && !message.isError) {
+                    Text(
+                        text = "⚐",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(TutiRadius.sm))
+                            .clickable { onReport() }
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                    )
+                }
+            }
         }
     }
 }

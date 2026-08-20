@@ -568,6 +568,17 @@ object RuChat : ChatStrings {
     override val quickHello = "Привет, как дела?"
     override val quickShop = "Что сказать в магазине?"
     override val quickGrammar = "Объясни грамматику"
+
+    override val reportAction = "Пожаловаться"
+    override val reportTitle = "Жалоба на ответ"
+    override val reportSubtitle = "Что было не так?"
+    override val reasonWrongAnswer = "Неверный ответ"
+    override val reasonOffensive = "Оскорбительное содержание"
+    override val reasonOther = "Другое"
+    override val commentPlaceholder = "Комментарий (необязательно)"
+    override val reportSend = "Отправить"
+    override val reportSentTitle = "Спасибо! ✅"
+    override val reportSentMessage = "Жалоба принята."
 }
 
 object RuNotifications : NotificationStrings {
