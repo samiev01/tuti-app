@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import app.tuti.tj.ui.components.OnboardingOverlay
 import app.tuti.tj.ui.navigation.BottomNavBar
 import app.tuti.tj.ui.navigation.BottomNavItem
 import app.tuti.tj.ui.navigation.bottomBarRoutes
@@ -105,7 +106,12 @@ class MainActivity : ComponentActivity() {
 
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val showBottomBar = navBackStackEntry?.destination?.route in bottomBarRoutes
+                    // Во время обучения на главном панель убирается: затемнение
+                    // подсказок до неё не достаёт, и яркие вкладки спорили бы с
+                    // пузырём. Возвращается на шаге, который про неё и
+                    // рассказывает.
+                    val showBottomBar = navBackStackEntry?.destination?.route in bottomBarRoutes &&
+                        (!OnboardingOverlay.active || OnboardingOverlay.highlightsBottomBar)
 
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),

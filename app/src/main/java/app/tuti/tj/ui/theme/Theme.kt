@@ -40,6 +40,15 @@ data class TutiAccent(
 
 data class TutiExtendedColors(
     // ── акцентные семейства ──
+    /**
+     * Бренд Tuti — фирменный зелёный [TutiGreen]. Единственный
+     * акцент интерфейса: главные кнопки, прогресс, проценты,
+     * активные и выбранные состояния.
+     *
+     * Имя слота осталось историческим: раньше здесь жил бирюзовый
+     * Jade, и на него ссылаются два десятка экранов. Значения
+     * сменились, обращение `tutiColors.jade` — прежнее.
+     */
     val jade: TutiAccent,
     val mango: TutiAccent,
     val grape: TutiAccent,
@@ -95,20 +104,20 @@ data class TutiExtendedColors(
 )
 
 private fun lightColors() = TutiExtendedColors(
-    jade = TutiAccent(Jade, JadeDeep, JadeSoft, JadeDark),
+    jade = TutiAccent(TutiGreen, TutiGreenDeep, TutiGreenSoft, TutiGreenDark),
     mango = TutiAccent(Mango, MangoDeep, MangoSoft, Color(0xFF8A4B00)),
     grape = TutiAccent(Grape, GrapeDeep, GrapeSoft, Color(0xFF4B2FB0)),
     sky = TutiAccent(Sky, SkyDeep, SkySoft, Color(0xFF0E5DA8)),
     coral = TutiAccent(Coral, CoralDeep, CoralSoft, Color(0xFFB02525)),
     leaf = TutiAccent(Leaf, LeafDeep, LeafSoft, Color(0xFF1E7A28)),
 
-    progressGradient = listOf(Jade, JadeGlow),
-    streakGradient = listOf(Jade, Color(0xFF00B4A8), Sky),
+    progressGradient = listOf(TutiGreen, TutiGreenGlow),
+    streakGradient = listOf(TutiGreen, TutiGreenGlow, Sky),
     streakCalmBg = Color(0xFFEDF1F5),
     streakCalmBorder = Color(0xFFDCE4EC),
-    courseCardGradient = listOf(JadeDeep, Jade, Color(0xFF4BD9A8)),
+    courseCardGradient = listOf(TutiGreenDeep, TutiGreen, TutiGreenGlow),
     plusGradient = listOf(Color(0xFFFFC24D), Mango, Color(0xFFFF7A29)),
-    heroGradient = listOf(Color(0xFFEDFBF6), Color(0xFFDCF4FF)),
+    heroGradient = listOf(TutiGreenMist, Color(0xFFDCF4FF)),
     xpGradient = listOf(Grape, GrapeBright),
 
     correctBg = LeafSoft,
@@ -129,7 +138,7 @@ private fun lightColors() = TutiExtendedColors(
     progressTrack = Color(0xFFDDE5EC),
     tileBg = Color(0xFFF1F5F8),
 
-    practiceBg1 = JadeMist,
+    practiceBg1 = TutiGreenMist,
     practiceBg2 = SkySoft,
     practiceBg3 = MangoSoft,
     practiceBg4 = GrapeSoft,
@@ -142,20 +151,20 @@ private fun lightColors() = TutiExtendedColors(
 )
 
 private fun darkColors() = TutiExtendedColors(
-    jade = TutiAccent(JadeBright, Jade, Color(0xFF0C3A2E), Color(0xFF6EF0C4)),
+    jade = TutiAccent(TutiGreenBright, TutiGreen, Color(0xFF10331E), Color(0xFF93E0AB)),
     mango = TutiAccent(MangoBright, Mango, Color(0xFF3D2A0C), Color(0xFFFFD383)),
     grape = TutiAccent(GrapeBright, Grape, Color(0xFF261B4D), Color(0xFFC7B4FF)),
     sky = TutiAccent(SkyBright, Sky, Color(0xFF0E2842), Color(0xFF9CD0FF)),
     coral = TutiAccent(CoralBright, Coral, Color(0xFF3D1A1A), Color(0xFFFFB0B0)),
     leaf = TutiAccent(LeafBright, Leaf, Color(0xFF12331A), Color(0xFF9CEBA5)),
 
-    progressGradient = listOf(Jade, JadeGlow),
-    streakGradient = listOf(Color(0xFF00614C), Color(0xFF07526B)),
-    streakCalmBg = Color(0xFF18232F),
-    streakCalmBorder = Color(0xFF26333F),
-    courseCardGradient = listOf(Color(0xFF06402F), Color(0xFF0A6349), Color(0xFF0E8A66)),
+    progressGradient = listOf(TutiGreen, TutiGreenGlow),
+    streakGradient = listOf(Color(0xFF1E7838), Color(0xFF2A9648)),
+    streakCalmBg = Color(0xFF202F36),
+    streakCalmBorder = Color(0xFF37464F),
+    courseCardGradient = listOf(Color(0xFF15522A), Color(0xFF1E7838), Color(0xFF2A9648)),
     plusGradient = listOf(Color(0xFF8A5A0A), Color(0xFFB87200), Color(0xFFD98A18)),
-    heroGradient = listOf(Color(0xFF0E1C29), Color(0xFF0B141F)),
+    heroGradient = listOf(Color(0xFF1B2A31), Color(0xFF131F24)),
     xpGradient = listOf(Grape, GrapeBright),
 
     correctBg = CorrectBgDark,
@@ -166,20 +175,20 @@ private fun darkColors() = TutiExtendedColors(
     wrongBorder = Color(0xFF7A2E3A),
 
     cardBorder = TutiDarkOutline,
-    divider = Color(0xFF1E2E3E),
-    scrim = Color(0xFF04090F).copy(alpha = 0.72f),
-    lockedBg = Color(0xFF16222F),
-    lockedBorder = Color(0xFF2B3D50),
-    lockedContent = Color(0xFF6D8296),
-    progressTrack = Color(0xFF223447),
-    tileBg = Color(0xFF1A2836),
+    divider = Color(0xFF2A3A42),
+    scrim = Color(0xFF070F12).copy(alpha = 0.72f),
+    lockedBg = Color(0xFF1B2A31),
+    lockedBorder = Color(0xFF37464F),
+    lockedContent = Color(0xFF7A8D96),
+    progressTrack = Color(0xFF37464F),
+    tileBg = Color(0xFF2A3A42),
 
-    practiceBg1 = Color(0xFF0E2A24),
-    practiceBg2 = Color(0xFF0E2438),
-    practiceBg3 = Color(0xFF2E2312),
-    practiceBg4 = Color(0xFF211B3D),
-    messageBg = Color(0xFF1A2836),
-    statChipBg = Color(0xFF1C2C3D),
+    practiceBg1 = Color(0xFF12302A),
+    practiceBg2 = Color(0xFF12293D),
+    practiceBg3 = Color(0xFF32271A),
+    practiceBg4 = Color(0xFF262042),
+    messageBg = Color(0xFF2A3A42),
+    statChipBg = Color(0xFF202F36),
 
     gold = Color(0xFFFFC44D),
     silver = Color(0xFFB9C7D2),
@@ -199,10 +208,10 @@ val MaterialTheme.tutiColors: TutiExtendedColors
 // ── Material-схемы ──────────────────────────────────────────────
 
 private val TutiLightColorScheme = lightColorScheme(
-    primary = Jade,
+    primary = TutiGreen,
     onPrimary = Snow,
-    primaryContainer = JadeSoft,
-    onPrimaryContainer = JadeDark,
+    primaryContainer = TutiGreenSoft,
+    onPrimaryContainer = TutiGreenDark,
     secondary = Mango,
     onSecondary = Snow,
     secondaryContainer = MangoSoft,
@@ -227,7 +236,7 @@ private val TutiLightColorScheme = lightColorScheme(
 )
 
 private val TutiDarkColorScheme = darkColorScheme(
-    primary = JadeBright,
+    primary = TutiGreenBright,
     onPrimary = Color(0xFF00281D),
     primaryContainer = TutiDarkPrimaryContainer,
     onPrimaryContainer = Color(0xFF6EF0C4),

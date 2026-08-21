@@ -246,6 +246,7 @@ object RuHome : HomeStrings {
     override val levelAdvanced = "Продвинутый"
 
     override val weeklyStreak = "Неделя"
+    override val calendarTitle = "Календарь"
     override val chooseLanguageTitle = "Какой язык?"
     override val chooseLanguageMessage = "Выберите язык изучения"
     override val chooseLanguageConfirm = "Выбрать"
@@ -502,7 +503,7 @@ object RuAchievements : AchievementsStrings {
 }
 
 object RuLeaderboard : LeaderboardStrings {
-    override val title = "Рейтинг 🏆"
+    override val title = "Рейтинг"
     override val emptyTitle = "Пока никого нет"
     override val emptyMessageCity = "В вашем городе пока никого нет. Станьте первым!"
     override val emptyMessageGlobal = "Станьте первым в рейтинге!"
@@ -510,6 +511,8 @@ object RuLeaderboard : LeaderboardStrings {
     override val filterMyCity = "🏛️ Мой город"
     override val you = "Вы"
     override val offline = "Офлайн — показаны последние данные"
+    override val topThree = "Тройка лучших"
+    override fun pointsToFirst(points: Int) = "До первого места $points баллов"
     override val signInTitle = "Войдите, чтобы видеть рейтинг"
     override val signInMessage =
         "Войдите, чтобы видеть общий рейтинг и соревноваться с другими."

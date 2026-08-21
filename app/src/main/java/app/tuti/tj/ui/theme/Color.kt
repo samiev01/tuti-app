@@ -9,19 +9,38 @@ import androidx.compose.ui.graphics.Color
 //  по-взрослому. Никаких пастельных «дошкольных» тонов: каждый
 //  цвет имеет полную насыщенность и тёмную пару для глубины.
 //
-//  Структура: Brand (Jade) → Accents (Mango/Grape/Sky/Coral/Leaf)
+//  Структура: Brand (Tuti Green) → Accents (Mango/Grape/Sky/Coral/Leaf)
 //             → Ink (нейтрали) → Semantic → Dark theme
 // ════════════════════════════════════════════════════════════════
 
-// ── БРЕНД · Jade ────────────────────────────────────────────────
-// Основной цвет Tuti. Перо попугая: зелёный с уходом в бирюзу.
-val Jade = Color(0xFF00C48C)
-val JadeDeep = Color(0xFF00A374)          // нажатие / нижняя грань кнопки
-val JadeDark = Color(0xFF007D59)          // текст на светлом контейнере
-val JadeSoft = Color(0xFFD3F7EA)          // контейнер / заливка чипа
-val JadeMist = Color(0xFFEDFBF6)          // фон секции
-val JadeBright = Color(0xFF22E3A8)        // акцент в тёмной теме
-val JadeGlow = Color(0xFF4BE0B8)          // светлый конец градиента прогресса
+// ── БРЕНД · Tuti Green ──────────────────────────────────────────
+// Основной цвет Tuti: чистая зелень без ухода в бирюзу. Раньше
+// здесь был Jade (#00C48C) — зелёный с сильным бирюзовым уклоном.
+// На светлом интерфейсе он читался как «мятный», спорил с
+// нейтралями и не совпадал с главной кнопкой экрана.
+//
+// Это единственный акцент интерфейса: главные кнопки, прогресс,
+// проценты, активные и выбранные состояния. Семейство остальных
+// акцентов (Mango/Grape/Sky/Coral/Leaf) отвечает за смысл —
+// награды, ошибки, верные ответы, — а не за бренд.
+val TutiGreen = Color(0xFF35B85A)
+val TutiGreenDeep = Color(0xFF2A9648)     // нажатие / нижняя грань кнопки
+val TutiGreenDark = Color(0xFF1E7838)     // текст на светлой заливке
+val TutiGreenSoft = Color(0xFFE7F6EC)     // контейнер / заливка чипа
+val TutiGreenMist = Color(0xFFF2FBF5)     // фон секции
+val TutiGreenBright = Color(0xFF5FD07F)   // акцент в тёмной теме
+val TutiGreenGlow = Color(0xFF6FD98C)     // светлый конец градиента прогресса
+
+// ── Цвета вкладок нижней навигации ──────────────────────────────
+// Совпадают с заливкой фирменных иконок вкладок: у каждого раздела
+// свой цвет, и подпись с подложкой берут его отсюда, а не из
+// акцентных семейств. Одинаковы в светлой и тёмной теме — сами
+// иконки цветные, перекрашивать их под тему нельзя.
+val NavHomeColor = TutiGreen
+val NavLessonsColor = Color(0xFF4F7DF3)
+val NavRankingColor = Color(0xFFF2B84B)
+val NavPracticeColor = Color(0xFFF26B5E)
+val NavProfileColor = Color(0xFF8B6FE8)
 
 // ── Палитра аватаров ────────────────────────────────────────────
 // Цвет подставляется по хешу имени, когда у пользователя нет фото.
@@ -73,8 +92,10 @@ val Ink20 = Color(0xFFC3CFDA)             // разделители на све�
 val Ink10 = Color(0xFFE2E9EF)             // границы карточек
 // Фон темнее карточек ровно настолько, чтобы их границы читались:
 // совсем белый сливал экран в одну стену, откровенно серый выглядел
-// пыльно. Белый остаётся только у карточек.
-val Cloud = Color(0xFFF0F4F8)             // фон приложения
+// пыльно. Белый остаётся только у карточек. Разницу с карточкой
+// держит не столько сам тон, сколько их граница [Ink10], поэтому
+// фон можно вести ближе к белому, не теряя карточки.
+val Cloud = Color(0xFFF7F9FC)             // фон приложения
 val Snow = Color(0xFFFFFFFF)              // поверхность карточек
 
 // ════════════════════════════════════════════════════════════════
@@ -82,9 +103,9 @@ val Snow = Color(0xFFFFFFFF)              // поверхность карточ
 // ════════════════════════════════════════════════════════════════
 
 // ── Светлая палитра ─────────────────────────────────────────────
-val TutiPrimary = Jade
-val TutiPrimaryDark = JadeDeep
-val TutiPrimaryContainer = JadeSoft
+val TutiPrimary = TutiGreen
+val TutiPrimaryDark = TutiGreenDeep
+val TutiPrimaryContainer = TutiGreenSoft
 val TutiSecondary = Mango
 val TutiSecondaryContainer = MangoSoft
 val TutiBackground = Cloud
@@ -98,16 +119,21 @@ val TutiOnSurface = Ink
 val TutiTextMuted = Ink40
 
 // ── Тёмная палитра ──────────────────────────────────────────────
-// Сине-чернильная база вместо чёрной: бренд остаётся тёплым.
-val TutiDarkPrimary = JadeBright
-val TutiDarkPrimaryContainer = Color(0xFF063D2F)
-val TutiDarkBackground = Color(0xFF0B141F)
-val TutiDarkSurface = Color(0xFF13202E)
-val TutiDarkSurfaceVariant = Color(0xFF1C2C3D)
-val TutiDarkOnBackground = Color(0xFFE9F1F7)
-val TutiDarkOnSurface = Color(0xFFDCE7F0)
-val TutiDarkTextMuted = Color(0xFF8FA3B6)
-val TutiDarkOutline = Color(0xFF27394D)
+// База почти нейтральная, с едва заметным сине-зелёным уходом.
+// Раньше здесь была чернильно-синяя гамма: на телефоне она читалась
+// как «синий экран», а не как тёмная тема, и спорила с зелёным
+// акцентом. Теперь тон холодный ровно настолько, чтобы не быть
+// плоско-серым, а карточка отличается от фона на одну ступень —
+// её видно и без границы.
+val TutiDarkPrimary = TutiGreenBright
+val TutiDarkPrimaryContainer = Color(0xFF10331E)
+val TutiDarkBackground = Color(0xFF131F24)   // фон приложения
+val TutiDarkSurface = Color(0xFF202F36)      // карточки, панели
+val TutiDarkSurfaceVariant = Color(0xFF2A3A42)
+val TutiDarkOnBackground = Color(0xFFF1F7FB)
+val TutiDarkOnSurface = Color(0xFFE8EFF3)
+val TutiDarkTextMuted = Color(0xFF8B9EA8)
+val TutiDarkOutline = Color(0xFF37464F)
 val TutiDarkError = CoralBright
 val TutiDarkSuccess = LeafBright
 

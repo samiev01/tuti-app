@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +54,7 @@ import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
 import app.tuti.tj.ui.i18n.LocalTutiStrings
 import app.tuti.tj.ui.i18n.TooltipStrings
+import kotlinx.coroutines.delay
 
 // ════════════════════════════════════════════════════════════════
 //  ОБУЧАЮЩИЕ ПОДСКАЗКИ ГЛАВНОГО ЭКРАНА
@@ -69,15 +72,46 @@ data class TooltipStep(
     val mascotSide: String, // "left", "right", "center"
 )
 
+/** Сколько ждать координаты цели, прежде чем считать шаг непоказуемым. */
+private const val TARGET_WAIT_MS = 400L
+
+/**
+ * Состояние обучения, которое нужно за пределами главного экрана.
+ *
+ * Нижняя панель рисуется Scaffold'ом в MainActivity, а не внутри
+ * HomeScreen: в локальную карту экрана её координаты не попадают, и
+ * затемнение оверлея до неё не достаёт. Раньше из-за этого шаг про
+ * практику показывался без выреза, стрелка целилась в середину
+ * панели — то есть в «Рейтинг», — а сама панель оставалась яркой на
+ * всех шагах и перетягивала внимание.
+ *
+ * Теперь панель кладёт сюда свои координаты, а экран и MainActivity
+ * читают отсюда, показывать ли её вообще.
+ */
+object OnboardingOverlay {
+    val bounds = mutableStateMapOf<String, Rect>()
+
+    /** true, пока на главном показывается обучение. */
+    var active by mutableStateOf(false)
+
+    /** true, когда текущий шаг рассказывает как раз про нижнюю панель. */
+    var highlightsBottomBar by mutableStateOf(false)
+}
+
 val onboardingSteps = listOf(
+    // Речь о баллах, поэтому и подсвечивается плашка баллов, а не
+    // вся верхняя строка с флагом, календарём и серией.
     TooltipStep(
         text = { it.xp },
-        targetKey = "header_row",
+        targetKey = "xp_chip",
         mascotSide = "right",
     ),
+    // Серия показывается на чипе в верхней строке: карточка недели
+    // уехала с главного на экран календаря, и прежняя цель
+    // «streak_card» подсветить было бы нечего.
     TooltipStep(
         text = { it.streak },
-        targetKey = "streak_card",
+        targetKey = "streak_chip",
         mascotSide = "left",
     ),
     TooltipStep(
@@ -118,13 +152,27 @@ fun OnboardingTooltips(
 
     LaunchedEffect(currentStep, targetBounds.keys.toSet()) {
         val s = onboardingSteps[currentStep]
-        val needsTarget = s.targetKey != "done" && s.targetKey != "bottom_nav_practice"
-        if (needsTarget && s.targetKey !in targetBounds) {
+        // «done» — единственный шаг без цели: он показывается по центру.
+        // Остальные без своих координат пропускаются, но не сразу:
+        // координаты приходят из onGloballyPositioned, то есть после
+        // первой раскладки. Решишь сразу — первый шаг исчезнет ещё до
+        // того, как экран успеет измериться. Пауза заканчивается сама,
+        // как только цели появятся: эффект перезапустится по ключам.
+        if (s.targetKey != "done" && s.targetKey !in targetBounds) {
+            delay(TARGET_WAIT_MS)
             if (currentStep < onboardingSteps.size - 1) currentStep++ else onComplete()
         }
     }
 
     LaunchedEffect(currentStep) { onStepChanged(currentStep) }
+
+    // Нижняя панель показывается только на своём шаге: на остальных
+    // затемнение до неё не достаёт, и яркая полоса вкладок спорила бы
+    // с подсказкой.
+    DisposableEffect(step.targetKey) {
+        OnboardingOverlay.highlightsBottomBar = step.targetKey == "bottom_nav_practice"
+        onDispose { OnboardingOverlay.highlightsBottomBar = false }
+    }
 
     val density = LocalDensity.current
     val cutoutPadPx = with(density) { 8.dp.toPx() }
@@ -155,9 +203,7 @@ fun OnboardingTooltips(
                 it.bottom - overlayPos.y,
             )
         }
-        val showCutout = localRect != null &&
-            step.targetKey != "done" &&
-            step.targetKey != "bottom_nav_practice"
+        val showCutout = localRect != null && step.targetKey != "done"
 
         // ── Затемнение с вырезом-прожектором ──
         Canvas(
@@ -208,25 +254,6 @@ fun OnboardingTooltips(
                         arrowPointsUp = false,
                         arrowCenterXPx = 0f,
                         modifier = Modifier.padding(horizontal = 20.dp),
-                    )
-                }
-            }
-
-            step.targetKey == "bottom_nav_practice" -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-                    TooltipBubble(
-                        step = step,
-                        isLast = false,
-                        currentStep = currentStep,
-                        totalSteps = onboardingSteps.size,
-                        onSkip = onComplete,
-                        onNext = advance,
-                        showArrow = true,
-                        arrowPointsUp = false,
-                        arrowCenterXPx = overlaySize.width / 2f - paddingHorizPx,
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp)
-                            .padding(bottom = 12.dp),
                     )
                 }
             }

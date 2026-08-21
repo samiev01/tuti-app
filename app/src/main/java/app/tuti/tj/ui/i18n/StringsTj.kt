@@ -206,6 +206,7 @@ object TjHome : HomeStrings {
     override val levelAdvanced = "Пешрафта"
 
     override val weeklyStreak = "Ҳафта"
+    override val calendarTitle = "Тақвим"
     override val chooseLanguageTitle = "Кадом забон?"
     override val chooseLanguageMessage = "Забони омӯзишро интихоб кунед"
     override val chooseLanguageConfirm = "Интихоб кардан"
@@ -455,7 +456,7 @@ object TjAchievements : AchievementsStrings {
 }
 
 object TjLeaderboard : LeaderboardStrings {
-    override val title = "Рейтинг 🏆"
+    override val title = "Рейтинг"
     override val emptyTitle = "Ҳоло корбарон нестанд"
     override val emptyMessageCity = "Дар шаҳри шумо ҳоло касе нест. Аввалин шавед!"
     override val emptyMessageGlobal = "Аввалин нафари рейтинг шавед!"
@@ -463,6 +464,8 @@ object TjLeaderboard : LeaderboardStrings {
     override val filterMyCity = "🏛️ Шаҳри ман"
     override val you = "Шумо"
     override val offline = "Офлайн — охирин маълумот нишон дода мешавад"
+    override val topThree = "Се нафари беҳтарин"
+    override fun pointsToFirst(points: Int) = "Ба ҷойи аввал $points балл мондааст"
     override val signInTitle = "Ворид шавед барои рейтинг"
     override val signInMessage =
         "Барои дидани рейтинги глобалӣ ва мусобиқа бо дигарон ворид шавед."

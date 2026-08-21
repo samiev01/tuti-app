@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +51,7 @@ import app.tuti.tj.ui.components.LivingTutiMascot
 import app.tuti.tj.ui.theme.LocalDarkTheme
 import app.tuti.tj.ui.theme.TutiLogoFamily
 import app.tuti.tj.ui.theme.TutiMotion
+import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.TutiSpace
 import app.tuti.tj.ui.theme.tutiColors
 import kotlinx.coroutines.delay
@@ -81,8 +82,8 @@ private const val MIN_VISIBLE_MS = 1600L
 
 /** Языки, которым приложение учит сейчас. */
 private fun splashLanguages(s: TooltipStrings) = listOf(
-    "🇷🇺" to s.splashRussian,
-    "🇬🇧" to s.splashEnglish,
+    s.splashRussian,
+    s.splashEnglish,
 )
 
 @Composable
@@ -120,9 +121,9 @@ fun SplashScreen(
     }
 
     val bg = if (isDark) {
-        listOf(Color(0xFF0B141F), Color(0xFF0E1F1A))
+        listOf(Color(0xFF131F24), Color(0xFF14261F))
     } else {
-        listOf(Color(0xFFF4FDF9), Color(0xFFE3F7EC))
+        listOf(Color(0xFFF5FCF7), Color(0xFFE4F5E9))
     }
 
     Box(
@@ -200,8 +201,8 @@ fun SplashScreen(
                     .alpha(alphas[4].value)
                     .offset(y = rises[4].value.dp),
             ) {
-                splashLanguages(strings).forEach { (flag, label) ->
-                    LanguageBadge(flag = flag, label = label)
+                splashLanguages(strings).forEach { label ->
+                    LanguageBadge(label = label)
                 }
             }
 
@@ -214,24 +215,28 @@ fun SplashScreen(
 //  ЯЗЫК
 // ═══════════════════════════════════════════════════
 
+/**
+ * Название языка, которому учит приложение.
+ *
+ * Флага здесь нет: круг с флагом страны был крупнее самой подписи
+ * и читался как государственный символ, хотя речь о языке. Осталась
+ * плашка с названием — того же размера, что и круг по высоте,
+ * поэтому нижняя строка сплэша не просела.
+ */
 @Composable
-private fun LanguageBadge(flag: String, label: String) {
+private fun LanguageBadge(label: String) {
     val c = MaterialTheme.tutiColors
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(1.dp, c.jade.base.copy(alpha = 0.18f), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(flag, fontSize = 30.sp)
-        }
-        Spacer(Modifier.height(TutiSpace.sm))
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(TutiRadius.pill))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, c.jade.base.copy(alpha = 0.18f), RoundedCornerShape(TutiRadius.pill))
+            .padding(horizontal = TutiSpace.xl, vertical = TutiSpace.md),
+        contentAlignment = Alignment.Center,
+    ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelLarge,
             color = c.jade.base,
         )
     }

@@ -25,6 +25,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.MilitaryTech
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -70,10 +77,10 @@ import app.tuti.tj.ui.i18n.LocalTutiStrings
 // ════════════════════════════════════════════════════════════════
 //  РЕЙТИНГ
 //
-//  Соревновательный экран, поэтому он единственный, кто целиком
-//  живёт на цветном фоне: подиум и карточка профиля лежат на
-//  брендовом градиенте. Ниже — обычные карточки системы, чтобы
-//  длинный список не «звенел».
+//  Соревновательный экран, но оформлен как остальные: очень
+//  светлый фон, белые карточки с тонкой границей, тёмно-синий
+//  текст. Раньше шапка с карточкой профиля лежала на брендовом
+//  градиенте, и экран выпадал из системы.
 //
 //  Цвета медалей вынесены в палитру (gold/silver/bronze) — они
 //  используются и здесь, и в достижениях.
@@ -223,6 +230,16 @@ fun LeaderboardScreen(
                     }
                 }
 
+                // Сколько не хватает до вершины — спокойной строкой
+                // под подиумом. Когда-то это была яркая карточка и она
+                // перетягивала внимание с самого рейтинга; теперь это
+                // тихая подсказка того же веса, что подписи вокруг.
+                val leaderXp = displayedUsers.firstOrNull()?.xp ?: 0
+                val gapToFirst = leaderXp - myXp
+                if (gapToFirst > 0) {
+                    item(key = "gap") { PointsToFirst(points = gapToFirst) }
+                }
+
                 itemsIndexed(
                     items = displayedUsers.drop(3),
                     key = { _, u -> "row_${u.uid}" },
@@ -235,9 +252,6 @@ fun LeaderboardScreen(
                         animIndex = index,
                     )
                 }
-                // Хвост списка. Мотивационной карточки здесь больше
-                // нет: она забирала внимание с самого рейтинга, ради
-                // которого на экран и заходят.
                 item(key = "tail") {
                     Spacer(Modifier.height(TutiSpace.xxxl))
                 }
@@ -263,56 +277,34 @@ private fun Header(
     val c = MaterialTheme.tutiColors
     val strings = LocalTutiStrings.current
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = TutiRadius.xxl, bottomEnd = TutiRadius.xxl))
-            .background(Brush.verticalGradient(c.streakGradient)),
+            .statusBarsPadding()
+            .padding(horizontal = TutiSpace.screen)
+            .padding(top = TutiSpace.sm, bottom = TutiSpace.md),
     ) {
-        Box(
-            modifier = Modifier
-                .size(240.dp)
-                .align(Alignment.TopEnd)
-                .background(
-                    Brush.radialGradient(listOf(Color.White.copy(alpha = 0.14f), Color.Transparent)),
-                ),
+        Text(
+            text = strings.leaderboard.title,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onBackground,
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = TutiSpace.screen)
-                .padding(top = TutiSpace.md, bottom = TutiSpace.xl),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = strings.leaderboard.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White,
-                )
-            }
+        Spacer(Modifier.height(TutiSpace.md))
 
-            Spacer(Modifier.height(TutiSpace.lg))
-
-            ProfileCard(
-                fbUser = fbUser,
-                myGlobalRank = myGlobalRank,
-                userCity = userCity,
-                xp = xp,
-                streak = streak,
-                lessons = lessons,
-                words = words,
-            )
-        }
+        ProfileCard(
+            fbUser = fbUser,
+            myGlobalRank = myGlobalRank,
+            userCity = userCity,
+            xp = xp,
+            streak = streak,
+            lessons = lessons,
+            words = words,
+        )
     }
 }
 
-/** «Стеклянная» карточка на градиенте: свой результат всегда перед глазами. */
+/** Свой результат всегда перед глазами — первой карточкой экрана. */
 @Composable
 private fun ProfileCard(
     fbUser: FirebaseUser,
@@ -327,31 +319,25 @@ private fun ProfileCard(
     val strings = LocalTutiStrings.current
     val name = fbUser.displayName?.takeIf { it.isNotBlank() } ?: strings.common.user
     val photoUrl = fbUser.photoUrl?.toString()
-    val shape = RoundedCornerShape(TutiRadius.lg)
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(Color.White.copy(alpha = 0.15f))
-            .border(1.dp, Color.White.copy(alpha = 0.25f), shape)
-            .padding(TutiSpace.md),
+    TutiCard(
+        modifier = Modifier.fillMaxWidth(),
+        radius = TutiRadius.xl,
+        contentPadding = TutiSpace.lg,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Avatar(
                 photoUrl = photoUrl,
                 name = name,
-                size = 48.dp,
+                size = 56.dp,
                 colorIndex = 0,
-                borderColor = Color.White,
-                borderWidth = 2.dp,
             )
             Spacer(Modifier.width(TutiSpace.md))
             Column(Modifier.weight(1f)) {
                 Text(
                     text = name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -359,7 +345,7 @@ private fun ProfileCard(
                     text = "${cityEmoji(userCity)} ${strings.cities.name(userCity)}" +
                         if (myGlobalRank > 0) " · #$myGlobalRank" else "",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.75f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -369,12 +355,12 @@ private fun ProfileCard(
                 Text(
                     text = "$xp",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = c.gold,
+                    color = c.jade.base,
                 )
                 Text(
                     text = strings.common.points,
                     style = MaterialTheme.typography.labelSmall,
-                    color = c.gold.copy(alpha = 0.85f),
+                    color = c.jade.base,
                 )
             }
         }
@@ -384,7 +370,7 @@ private fun ProfileCard(
             Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color.White.copy(alpha = 0.2f)),
+                .background(c.divider),
         )
         Spacer(Modifier.height(TutiSpace.md))
 
@@ -392,31 +378,42 @@ private fun ProfileCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            StatItem("🔥", strings.common.streakLabel, "$streak")
+            StatItem(Icons.Outlined.LocalFireDepartment, strings.common.streakLabel, "$streak")
             StatSeparator()
-            StatItem("📚", strings.common.lessonsLabel, "$lessons")
+            StatItem(Icons.AutoMirrored.Outlined.MenuBook, strings.common.lessonsLabel, "$lessons")
             StatSeparator()
-            StatItem("⭐", strings.common.wordsLabel, "$words")
+            StatItem(Icons.Outlined.StarBorder, strings.common.wordsLabel, "$words")
             StatSeparator()
-            StatItem("🏅", strings.common.rankLabel, if (myGlobalRank > 0) "#$myGlobalRank" else "—")
+            StatItem(
+                Icons.Outlined.MilitaryTech,
+                strings.common.rankLabel,
+                if (myGlobalRank > 0) "#$myGlobalRank" else "—",
+            )
         }
     }
 }
 
+/** Показатель в карточке профиля: контурный значок, число, подпись. */
 @Composable
-private fun StatItem(emoji: String, label: String, value: String) {
+private fun StatItem(icon: ImageVector, label: String, value: String) {
+    val c = MaterialTheme.tutiColors
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(emoji, fontSize = 14.sp)
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = c.jade.base,
+            modifier = Modifier.size(22.dp),
+        )
+        Spacer(Modifier.height(TutiSpace.xs))
         Text(
             text = value,
-            style = MaterialTheme.typography.titleSmall,
-            color = Color.White,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            fontSize = 9.sp,
-            color = Color.White.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -426,8 +423,8 @@ private fun StatSeparator() {
     Box(
         Modifier
             .width(1.dp)
-            .height(36.dp)
-            .background(Color.White.copy(alpha = 0.2f)),
+            .height(44.dp)
+            .background(MaterialTheme.tutiColors.divider),
     )
 }
 
@@ -458,6 +455,13 @@ private fun FilterButtons(
     }
 }
 
+/**
+ * Переключатель охвата рейтинга.
+ *
+ * Выбранный — залитый фирменным зелёным, невыбранный — белый с
+ * тонкой границей, как карточки экрана. Раньше невыбранный был
+ * серой плашкой и читался как отключённый.
+ */
 @Composable
 private fun FilterTab(
     text: String,
@@ -466,10 +470,15 @@ private fun FilterTab(
     modifier: Modifier = Modifier,
 ) {
     val c = MaterialTheme.tutiColors
+    val shape = RoundedCornerShape(TutiRadius.lg)
+
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(TutiRadius.md))
-            .background(if (selected) c.jade.base else c.tileBg)
+            .clip(shape)
+            .background(if (selected) c.jade.base else MaterialTheme.colorScheme.surface)
+            .then(
+                if (selected) Modifier else Modifier.border(1.dp, c.cardBorder, shape)
+            )
             .clickable(onClick = onClick)
             .padding(vertical = TutiSpace.md),
         contentAlignment = Alignment.Center,
@@ -477,7 +486,9 @@ private fun FilterTab(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -486,14 +497,40 @@ private fun FilterTab(
 //  ПОДИУМ
 // ═══════════════════════════════════════════════════
 
+/**
+ * Тройка лидеров.
+ *
+ * Подиум лежит в такой же белой карточке, как остальные блоки, и
+ * подписан заголовком: раньше он висел прямо на фоне и читался как
+ * продолжение списка, а не как отдельная витрина.
+ */
 @Composable
 private fun Podium(users: List<LeaderUserScore>, currentUid: String) {
+    TutiCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = TutiSpace.screen),
+        radius = TutiRadius.xl,
+        contentPadding = TutiSpace.lg,
+    ) {
+        Text(
+            text = LocalTutiStrings.current.leaderboard.topThree,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(TutiSpace.lg))
+        PodiumRow(users = users, currentUid = currentUid)
+    }
+}
+
+@Composable
+private fun PodiumRow(users: List<LeaderUserScore>, currentUid: String) {
     val c = MaterialTheme.tutiColors
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = TutiSpace.sm, vertical = TutiSpace.sm),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Bottom,
     ) {
@@ -634,6 +671,40 @@ private fun PodiumItem(
                 )
             }
         }
+    }
+}
+
+/** «До первого места столько-то» — подсказка под подиумом. */
+@Composable
+private fun PointsToFirst(points: Int) {
+    val c = MaterialTheme.tutiColors
+    val shape = RoundedCornerShape(TutiRadius.lg)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = TutiSpace.screen, vertical = TutiSpace.md)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, c.cardBorder, shape)
+            .padding(horizontal = TutiSpace.lg, vertical = TutiSpace.md),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.StarBorder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(TutiSpace.sm))
+        Text(
+            text = LocalTutiStrings.current.leaderboard.pointsToFirst(points),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

@@ -244,6 +244,7 @@ interface HomeStrings {
     val levelAdvanced: String
 
     val weeklyStreak: String
+    val calendarTitle: String
     val chooseLanguageTitle: String
     val chooseLanguageMessage: String
     val chooseLanguageConfirm: String
@@ -519,6 +520,13 @@ interface LeaderboardStrings {
     val filterMyCity: String
     val you: String
     val offline: String
+
+    /** Заголовок карточки с подиумом. */
+    val topThree: String
+
+    /** Сколько баллов не хватает до первого места. */
+    fun pointsToFirst(points: Int): String
+
     val signInTitle: String
     val signInMessage: String
 }

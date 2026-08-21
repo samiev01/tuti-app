@@ -9,5 +9,5 @@
       обязан совпадать с верхней точкой градиента того экрана — иначе на
       старте мелькнёт полоса другого цвета.
     -->
-    <color name="splash_background">#F4FDF9</color>
+    <color name="splash_background">#F5FCF7</color>
 </resources>

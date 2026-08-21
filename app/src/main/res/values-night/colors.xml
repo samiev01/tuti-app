@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Совпадает с верхней точкой градиента ночного варианта SplashScreen.kt -->
-    <color name="splash_background">#0B141F</color>
+    <color name="splash_background">#131F24</color>
 </resources>

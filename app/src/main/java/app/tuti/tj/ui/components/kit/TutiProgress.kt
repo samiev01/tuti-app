@@ -56,6 +56,12 @@ fun TutiProgressBar(
     trackColor: Color? = null,
     animated: Boolean = true,
     showShine: Boolean = false,
+    /**
+     * Светлая полоса поверх заливки. Нужна градиентным полосам,
+     * чтобы они не выглядели плоской плашкой; там, где полоса
+     * залита одним чистым цветом, блик только мутит его.
+     */
+    showHighlight: Boolean = true,
 ) {
     val c = MaterialTheme.tutiColors
     val fill = colors ?: c.progressGradient
@@ -86,14 +92,16 @@ fun TutiProgressBar(
                     .then(if (showShine) shineModifier() else Modifier),
             ) {
                 // светлая полоса сверху — даёт полосе объём
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(height / 3)
-                        .padding(horizontal = 3.dp)
-                        .clip(RoundedCornerShape(TutiRadius.pill))
-                        .background(Color.White.copy(alpha = 0.28f)),
-                )
+                if (showHighlight) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height / 3)
+                            .padding(horizontal = 3.dp)
+                            .clip(RoundedCornerShape(TutiRadius.pill))
+                            .background(Color.White.copy(alpha = 0.28f)),
+                    )
+                }
             }
         }
     }

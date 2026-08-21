@@ -1,10 +1,12 @@
 package app.tuti.tj.ui.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -14,12 +16,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,14 +33,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import app.tuti.tj.R
+import app.tuti.tj.ui.components.OnboardingOverlay
 import app.tuti.tj.ui.i18n.LocalTutiStrings
 import app.tuti.tj.ui.i18n.NavStrings
+import app.tuti.tj.ui.theme.NavHomeColor
+import app.tuti.tj.ui.theme.NavLessonsColor
+import app.tuti.tj.ui.theme.NavPracticeColor
+import app.tuti.tj.ui.theme.NavProfileColor
+import app.tuti.tj.ui.theme.NavRankingColor
 import app.tuti.tj.ui.theme.TutiMotion
 import app.tuti.tj.ui.theme.TutiRadius
 import app.tuti.tj.ui.theme.tutiColors
@@ -44,26 +60,43 @@ import app.tuti.tj.ui.theme.tutiColors
 // ════════════════════════════════════════════════════════════════
 //  НИЖНЯЯ НАВИГАЦИЯ
 //
-//  Вместо стандартной Material-панели — собственная: у каждой
-//  вкладки свой акцентный цвет из палитры, а активный пункт
-//  подсвечивается капсулой этого цвета. Так пользователь
-//  запоминает разделы не только по подписи, но и по цвету,
-//  а сама панель перестаёт быть «системной деталью».
+//  Пять разделов с фирменными цветными иконками Tuti. Цвет здесь
+//  принадлежит вкладке, а не состоянию: иконки всегда в полную
+//  силу, без прозрачности — приглушённые выглядели выцветшими.
+//  Выбранную вкладку показывают округлая подложка её цвета, подъём
+//  с лёгким увеличением и окрашенная уплотнённая подпись.
 //
-//  В центре — рейтинг. Он выделен приподнятым золотым кругом, а не
-//  такой же капсулой: это не рядовой раздел, а соревновательная
-//  витрина, ради которой возвращаются. Композиция при этом
-//  симметрична — по две вкладки с каждой стороны.
+//  Иконки — растровые ресурсы в собственных цветах, поэтому
+//  рисуются с `tint = Color.Unspecified`: любой tint убил бы
+//  заливку.
+//
+//  Подложка занимает постоянное место [tabSlotWidth]×[tabSlotHeight]
+//  и появляется только цветом — от этого высота панели не скачет
+//  при переключении вкладок.
 // ════════════════════════════════════════════════════════════════
+
+/** Видимый размер иконки. */
+private val navIconSize = 28.dp
+
+/** Постоянное место под иконку: и подложка, и увеличенная иконка помещаются сюда. */
+private val tabSlotWidth = 48.dp
+private val tabSlotHeight = 36.dp
+
+/** Минимальная область нажатия вкладки. */
+private val tabMinTouch = 48.dp
+
+/** Прозрачность подложки выбранной вкладки. */
+private const val BACKDROP_ALPHA = 0.12f
 
 enum class BottomNavItem(
     val route: String,
-    val emoji: String,
+    @param:DrawableRes val iconRes: Int,
+    val color: Color,
 ) {
-    Home("home", "🏠"),
-    Lessons("lessons", "📚"),
-    Practice("practice", "🎯"),
-    Profile("profile", "👤"),
+    Home("home", R.drawable.nav_home, NavHomeColor),
+    Lessons("lessons", R.drawable.nav_lessons, NavLessonsColor),
+    Practice("practice", R.drawable.nav_practice, NavPracticeColor),
+    Profile("profile", R.drawable.nav_profile, NavProfileColor),
 }
 
 /** Подпись вкладки берётся из словаря: она зависит от языка интерфейса. */
@@ -85,8 +118,6 @@ fun BottomNavBar(navController: NavController) {
     val c = MaterialTheme.tutiColors
     val nav = LocalTutiStrings.current.nav
 
-    // Цвет вкладки берётся из акцентных семейств палитры
-    val accents = listOf(c.jade, c.sky, c.mango, c.grape)
     val tabs = BottomNavItem.entries
 
     /** Переход между разделами: одна и та же семантика для всех пунктов. */
@@ -114,38 +145,58 @@ fun BottomNavBar(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 4.dp, vertical = 8.dp),
+                .padding(horizontal = 4.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            // Центральный пункт выше остальных, поэтому ряд выравнивается
-            // по нижнему краю — подписи всех пяти стоят на одной линии.
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            tabs.take(2).forEachIndexed { i, item ->
+            // Рейтинг стоит в центре, поэтому список собирается из двух
+            // половин: порядок пунктов задан здесь, а не в enum.
+            tabs.take(2).forEach { item ->
                 NavTab(
-                    emoji = item.emoji,
+                    iconRes = item.iconRes,
                     label = item.label(nav),
+                    color = item.color,
                     selected = currentRoute == item.route,
-                    activeBg = accents[i].soft,
-                    activeText = accents[i].onSoft,
                     modifier = Modifier.weight(1f),
                     onClick = { switchTo(item.route) },
                 )
             }
 
-            LeaderboardTab(
+            NavTab(
+                iconRes = R.drawable.nav_ranking,
+                label = nav.leaderboard,
+                color = NavRankingColor,
                 selected = currentRoute == LEADERBOARD_ROUTE,
                 modifier = Modifier.weight(1f),
                 onClick = { switchTo(LEADERBOARD_ROUTE) },
             )
 
-            tabs.drop(2).forEachIndexed { i, item ->
+            tabs.drop(2).forEach { item ->
                 NavTab(
-                    emoji = item.emoji,
+                    iconRes = item.iconRes,
                     label = item.label(nav),
+                    color = item.color,
                     selected = currentRoute == item.route,
-                    activeBg = accents[i + 2].soft,
-                    activeText = accents[i + 2].onSoft,
-                    modifier = Modifier.weight(1f),
+                    // Обучающая подсказка про практику подсвечивает эту
+                    // вкладку, а панель живёт вне главного экрана —
+                    // координаты кладём в общее хранилище.
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(
+                            if (item == BottomNavItem.Practice) {
+                                Modifier.onGloballyPositioned { coords ->
+                                    val pos = coords.localToWindow(Offset.Zero)
+                                    OnboardingOverlay.bounds["bottom_nav_practice"] = Rect(
+                                        pos.x,
+                                        pos.y,
+                                        pos.x + coords.size.width,
+                                        pos.y + coords.size.height,
+                                    )
+                                }
+                            } else {
+                                Modifier
+                            }
+                        ),
                     onClick = { switchTo(item.route) },
                 )
             }
@@ -155,58 +206,76 @@ fun BottomNavBar(navController: NavController) {
 
 @Composable
 private fun NavTab(
-    emoji: String,
+    @DrawableRes iconRes: Int,
     label: String,
+    color: Color,
     selected: Boolean,
-    activeBg: Color,
-    activeText: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-
-    val capsuleWidth by animateDpAsState(
-        targetValue = if (selected) 52.dp else 38.dp,
-        animationSpec = TutiMotion.bouncy(),
-        label = "navCapsule",
+    // Упругая, но короткая: вкладки переключают часто, и долгий
+    // отскок начал бы мешать.
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.08f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "tabScale",
     )
-    val emojiScale by animateFloatAsState(
-        targetValue = if (selected) 1.12f else 1f,
-        animationSpec = TutiMotion.bouncy(),
-        label = "navEmoji",
+    val offsetY by animateDpAsState(
+        targetValue = if (selected) (-2).dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "tabOffset",
     )
-    val capsuleColor by animateColorAsState(
-        targetValue = if (selected) activeBg else Color.Transparent,
+    val backdrop by animateColorAsState(
+        targetValue = if (selected) color.copy(alpha = BACKDROP_ALPHA) else Color.Transparent,
         animationSpec = TutiMotion.normal(),
-        label = "navCapsuleColor",
+        label = "tabBackdrop",
     )
     val labelColor by animateColorAsState(
-        targetValue = if (selected) activeText else muted,
+        targetValue = if (selected) color else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = TutiMotion.normal(),
-        label = "navLabelColor",
+        label = "tabLabel",
     )
-
     val interaction = remember { MutableInteractionSource() }
 
     Column(
         modifier = modifier
+            .heightIn(min = tabMinTouch)
             .clip(RoundedCornerShape(TutiRadius.md))
             .clickable(interactionSource = interaction, indication = null) { onClick() }
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier
-                .width(capsuleWidth)
-                .height(30.dp)
-                .clip(RoundedCornerShape(TutiRadius.pill))
-                .background(capsuleColor),
+            modifier = Modifier.size(width = tabSlotWidth, height = tabSlotHeight),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = emoji,
-                fontSize = 19.sp,
-                modifier = Modifier.scale(emojiScale),
+            // Подложка лежит отдельным слоем и всегда занимает весь слот:
+            // появляется она только цветом, поэтому размеры вкладки не
+            // меняются и панель не дёргается.
+            Box(
+                modifier = Modifier
+                    .size(width = tabSlotWidth, height = tabSlotHeight)
+                    .clip(RoundedCornerShape(TutiRadius.sm))
+                    .background(backdrop),
+            )
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = label,
+                // Иконки фирменные и цветные — tint уничтожил бы заливку.
+                tint = Color.Unspecified,
+                // Прозрачности нет ни в одном состоянии: приглушённые
+                // иконки выглядели выцветшими. Выбранную вкладку
+                // показывают подложка, цветная подпись и подъём.
+                modifier = Modifier
+                    .size(navIconSize)
+                    .offset(y = offsetY)
+                    .scale(scale),
             )
         }
         Spacer(Modifier.height(3.dp))
@@ -214,67 +283,11 @@ private fun NavTab(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = labelColor,
-        )
-    }
-}
-
-/**
- * Рейтинг. Всегда залитый золотой круг, а не мягкая капсула, —
- * это якорь панели: он должен читаться как отдельная сущность
- * даже когда раздел не выбран. Выбранное состояние показывает
- * кольцо вокруг круга и цвет подписи.
- */
-@Composable
-private fun LeaderboardTab(
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val c = MaterialTheme.tutiColors
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.08f else 1f,
-        animationSpec = TutiMotion.bouncy(),
-        label = "leaderScale",
-    )
-    val ring by animateColorAsState(
-        targetValue = if (selected) c.gold.copy(alpha = 0.45f) else Color.Transparent,
-        animationSpec = TutiMotion.normal(),
-        label = "leaderRing",
-    )
-    val labelColor by animateColorAsState(
-        targetValue = if (selected) c.mango.onSoft else muted,
-        animationSpec = TutiMotion.normal(),
-        label = "leaderLabel",
-    )
-
-    val interaction = remember { MutableInteractionSource() }
-
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(TutiRadius.md))
-            .clickable(interactionSource = interaction, indication = null) { onClick() }
-            .padding(vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .scale(scale)
-                .border(3.dp, ring, CircleShape)
-                .padding(3.dp)
-                .clip(CircleShape)
-                .background(Brush.linearGradient(listOf(c.gold, c.mango.deep))),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = "🏆", fontSize = 19.sp)
-        }
-        Spacer(Modifier.height(3.dp))
-        Text(
-            text = LocalTutiStrings.current.nav.leaderboard,
-            style = MaterialTheme.typography.labelSmall,
-            color = labelColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(tabSlotWidth + 16.dp),
         )
     }
 }

@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import app.tuti.tj.TutiApplication
+import app.tuti.tj.ui.screens.CalendarScreen
 import app.tuti.tj.ui.screens.CourseScreen
 import app.tuti.tj.ui.screens.FinalStepScreen
 import app.tuti.tj.ui.screens.FlashcardsScreen
@@ -61,6 +62,7 @@ const val LISTENING_ROUTE = "listening_practice"
 const val WRITING_ROUTE = "writing_practice"
 const val LEADERBOARD_ROUTE = "leaderboard"
 const val ACHIEVEMENTS_ROUTE = "achievements"
+const val CALENDAR_ROUTE = "calendar"
 const val PLUS_ROUTE = "plus"
 const val COURSE_ROUTE = "course/{courseId}"
 
@@ -167,6 +169,14 @@ fun NavGraph(
                     }
                 },
                 onNavigateToPlus = { navController.navigate(PLUS_ROUTE) },
+                onOpenCalendar = { navController.navigate(CALENDAR_ROUTE) },
+            )
+        }
+
+        composable(CALENDAR_ROUTE) {
+            CalendarScreen(
+                repository = repo,
+                onBack = { navController.popBackStack() },
             )
         }
 
